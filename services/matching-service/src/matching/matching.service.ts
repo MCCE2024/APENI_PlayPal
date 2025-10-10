@@ -20,6 +20,10 @@ export class MatchingService {
     return newRequest.save();
   }
 
+  async findAll(): Promise<MatchingRequest[]> {
+    return this.matchingRequestModel.find().exec();
+  }
+
   /**
    * This Cron job runs automatically every 5 minutes.
    * It finds all pending requests and attempts to create as many matches as possible.

@@ -1,7 +1,8 @@
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import MatchRequestModal from './MatchRequestModal';
 import { MatchRequest } from '../types';
+import { getMatchRequests, createMatchRequest } from '../services';
 
 const Dashboard: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -10,10 +11,55 @@ const Dashboard: React.FC = () => {
   const openModal = useCallback(() => setIsModalOpen(true), []);
   const closeModal = useCallback(() => setIsModalOpen(false), []);
 
-  const handleRequestSubmit = (request: MatchRequest) => {
-    console.log('New Match Request:', request);
-    setMatchRequests(prev => [...prev, request]);
-    closeModal();
+  const fetchMatchRequests = useCallback(async () => {
+    try {
+      const requests = await getMatchRequests();
+      setMatchRequests(requests);
+    } catch (error) {
+      console.error('Failed to fetch match requests:', error);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchMatchRequests();
+  }, [fetchMatchRequests]);
+
+  const handleRequestSubmit = async (request: Omit<MatchRequest, '_id'>) => {
+    try {
+      const fullRequest = {
+        ...request,
+        userId: 'user-c-789', // Hardcoded for now
+        userEmail: 'user.c@example.com', // Hardcoded for now
+      };
+      await createMatchRequest(fullRequest);
+      closeModal();
+      fetchMatchRequests();
+    } catch (error) {
+      console.error('Failed to create match request:', error);
+    }
+  };
+
+  const renderStatusBadge = (status: string) => {
+    switch (status) {
+      case 'Matched':
+        return (
+          <span className="text-xs font-semibold uppercase tracking-wider bg-green-500/20 text-green-300 px-2 py-1 rounded-full">
+            Matched
+          </span>
+        );
+      case 'Cancelled':
+        return (
+          <span className="text-xs font-semibold uppercase tracking-wider bg-gray-500/20 text-gray-300 px-2 py-1 rounded-full">
+            Cancelled
+          </span>
+        );
+      default:
+        return (
+          <span className="text-xs font-semibold uppercase tracking-wider bg-yellow-500/20 text-yellow-300 px-2 py-1 rounded-full">
+            Pending
+          </span>
+        );
+    }
   };
 
   return (
@@ -32,16 +78,16 @@ const Dashboard: React.FC = () => {
         <h2 className="text-xl font-semibold text-white mb-4">Active Requests</h2>
         {matchRequests.length > 0 ? (
           <div className="space-y-4">
-            {matchRequests.map((req, index) => (
-              <div key={index} className="bg-slate-700/50 p-4 rounded-md flex justify-between items-center">
+            {matchRequests.map((req) => (
+              <div key={req._id} className="bg-slate-700/50 p-4 rounded-md flex justify-between items-center">
                 <div>
                   <p className="font-bold text-emerald-400">{req.sport} - <span className="text-slate-300 font-medium">{req.level}</span></p>
                   <p className="text-sm text-slate-400">{req.location}</p>
-                   <p className="text-sm text-slate-400">{req.dateFrom} to {req.dateTo}</p>
+                   <p className="text-sm text-slate-400">
+                    {new Date(req.dateTimeStart).toLocaleDateString()} {new Date(req.dateTimeStart).toLocaleTimeString()} - {new Date(req.dateTimeEnd).toLocaleDateString()} {new Date(req.dateTimeEnd).toLocaleTimeString()}
+                   </p>
                 </div>
-                 <span className="text-xs font-semibold uppercase tracking-wider bg-yellow-500/20 text-yellow-300 px-2 py-1 rounded-full">
-                    Pending
-                </span>
+                {renderStatusBadge(req.status)}
               </div>
             ))}
           </div>

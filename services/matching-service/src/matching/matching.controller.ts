@@ -1,10 +1,15 @@
-import { Controller, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Post, Body, HttpCode, HttpStatus, Get } from '@nestjs/common';
 import { MatchingService } from './matching.service';
 import { CreateMatchingRequestDto } from './dto/create-matching-request.dto';
 
-@Controller('matching-requests')
+@Controller('matching')
 export class MatchingController {
   constructor(private readonly matchingService: MatchingService) {}
+
+  @Get('requests')
+  findAll() {
+    return this.matchingService.findAll();
+  }
 
   /**
    * Endpoint to create a new match request.

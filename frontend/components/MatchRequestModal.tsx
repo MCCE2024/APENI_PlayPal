@@ -11,7 +11,7 @@ import { CalendarIcon } from './icons/CalendarIcon';
 interface MatchRequestModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (request: MatchRequest) => void;
+  onSubmit: (request: Omit<MatchRequest, '_id'>) => void;
 }
 
 const MatchRequestModal: React.FC<MatchRequestModalProps> = ({ isOpen, onClose, onSubmit }) => {
@@ -20,8 +20,8 @@ const MatchRequestModal: React.FC<MatchRequestModalProps> = ({ isOpen, onClose, 
   const [location, setLocation] = useState<string>('');
   const [dateFrom, setDateFrom] = useState<string>('');
   const [dateTo, setDateTo] = useState<string>('');
-  const [timeFrom, setTimeFrom] = useState<string>('09:00');
-  const [timeTo, setTimeTo] = useState<string>('17:00');
+  const [timeFrom, setTimeFrom] = useState<string>('10:00');
+  const [timeTo, setTimeTo] = useState<string>('12:00');
   
   useEffect(() => {
     const handleEsc = (event: KeyboardEvent) => {
@@ -36,7 +36,9 @@ const MatchRequestModal: React.FC<MatchRequestModalProps> = ({ isOpen, onClose, 
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    onSubmit({ sport, level, location, dateFrom, dateTo, timeFrom, timeTo });
+    const dateTimeStart = `${dateFrom}T${timeFrom}:00.000Z`;
+    const dateTimeEnd = `${dateTo}T${timeTo}:00.000Z`;
+    onSubmit({ sport, level, location, dateTimeStart, dateTimeEnd });
   };
 
   if (!isOpen) return null;
@@ -86,25 +88,22 @@ const MatchRequestModal: React.FC<MatchRequestModalProps> = ({ isOpen, onClose, 
             <input type="text" value={location} onChange={(e) => setLocation(e.target.value)} placeholder="e.g., Central Park Courts" required className={commonInputClasses} />
           </InputGroup>
 
-          <div>
-             <label className="flex items-center mb-2 text-sm font-medium text-slate-300">
-                <CalendarIcon className="w-5 h-5 text-slate-400 mr-2"/>
-                Date Frame
-            </label>
-            <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-4">
+            <InputGroup label="Date From">
               <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} required className={commonInputClasses} />
+            </InputGroup>
+            <InputGroup label="Date To">
               <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} required className={commonInputClasses} />
-            </div>
+            </InputGroup>
           </div>
-           <div>
-             <label className="flex items-center mb-2 text-sm font-medium text-slate-300">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                Time Frame
-            </label>
-            <div className="grid grid-cols-2 gap-4">
+
+          <div className="grid grid-cols-2 gap-4">
+            <InputGroup label="Time From">
               <input type="time" value={timeFrom} onChange={(e) => setTimeFrom(e.target.value)} required className={commonInputClasses} />
+            </InputGroup>
+            <InputGroup label="Time To">
               <input type="time" value={timeTo} onChange={(e) => setTimeTo(e.target.value)} required className={commonInputClasses} />
-            </div>
+            </InputGroup>
           </div>
 
           <div className="flex justify-end gap-4 pt-4">
