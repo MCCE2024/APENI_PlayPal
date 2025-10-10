@@ -70,6 +70,65 @@ $ mau deploy
 
 With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
 
+## Testing
+MongoDB setup:
+```
+docker run -d --name playpal-mongo -p 27017:27017 -v mongo-data:/data/db mongo
+```
+
+Player A:
+```
+curl --location 'http://localhost:3000/matching-requests' \
+--header 'Content-Type: application/json' \
+--data '{
+    "userId": "player-a-123",
+    "userEmail": "player.a@example.com",
+    "sport": "Tennis",
+    "level": "Intermediate",
+    "location": "Stadtpark Eisenstadt",
+    "dateTimeStart": "2025-10-11T10:00:00.000Z",
+    "dateTimeEnd": "2025-10-11T12:00:00.000Z"
+}'
+```
+
+Player B:
+```
+curl --location 'http://localhost:3000/matching-requests' \
+--header 'Content-Type: application/json' \
+--data '{
+    "userId": "player-b-456",
+    "userEmail": "player.b@example.com",
+    "sport": "Tennis",
+    "level": "Intermediate",
+    "location": "Stadtpark Eisenstadt",
+    "dateTimeStart": "2025-10-11T11:00:00.000Z",
+    "dateTimeEnd": "2025-10-11T13:00:00.000Z"
+}'
+```
+
+Player C:
+```
+curl --location 'http://localhost:3000/matching-requests' \
+--header 'Content-Type: application/json' \
+--data '{
+    "userId": "player-c-789",
+    "userEmail": "player.c@example.com",
+    "sport": "Tennis",
+    "level": "Beginner",
+    "location": "Stadtpark Eisenstadt",
+    "dateTimeStart": "2025-10-11T10:00:00.000Z",
+    "dateTimeEnd": "2025-10-11T12:00:00.000Z"
+}'
+```
+
+In the Logs you should see that A and B should get matched.
+
+For instant matching trigger use:
+```
+curl --location --request POST 'http://localhost:3000/matching-requests/run-batch'
+```
+
+
 ## Resources
 
 Check out a few resources that may come in handy when working with NestJS:
