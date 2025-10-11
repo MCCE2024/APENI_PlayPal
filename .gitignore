@@ -118,3 +118,5 @@ secrets.tfvars
 # (Note: On Linux/macOS, .terraformrc is usually global (~/.terraformrc) 
 # and doesn't need to be ignored here unless you override it locally.)
 terraform.rc
+
+kubeconfig
