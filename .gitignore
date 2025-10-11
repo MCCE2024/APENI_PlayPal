@@ -82,3 +82,39 @@ out/
 *~
 # Backup files
 *.bak
+
+### Terraform
+# --------------------------------------------------------------------------
+# Terraform / OpenTofu Specific Files
+# --------------------------------------------------------------------------
+
+# Local state file (always use a remote backend like S3, Azure Blob, etc.)
+*.tfstate
+*.tfstate.*
+# The -backup suffix is used for prior state files after a successful apply, 
+# but only when using a local backend.
+*.tfstate.backup
+
+# State Locking files (if using a local backend)
+.terraform.tfstate.lock.info
+.terraform-lock.hcl 
+
+# The local directory where Terraform/OpenTofu downloads provider plugins 
+# and modules. This should always be recreated by 'tofu init' or 'terraform init'.
+.terraform/
+.tofu/
+
+# Crash/diagnostic logs
+crash.log
+
+# Secret/Sensitive files
+# Generated credentials or output files that contain sensitive info
+*.tfvars.json
+# Often used for sensitive variable values, should not be committed
+# Use environment variables or secure vault integrations instead.
+secrets.tfvars
+
+# Windows-specific files that sometimes sneak in
+# (Note: On Linux/macOS, .terraformrc is usually global (~/.terraformrc) 
+# and doesn't need to be ignored here unless you override it locally.)
+terraform.rc
