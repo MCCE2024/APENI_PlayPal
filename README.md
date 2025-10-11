@@ -14,6 +14,13 @@ This README serves as a guide for setting up the project, running the services, 
 
 - Containerization: Docker
 
+### Architecture
+The application follows a microservice architecture, where each service is responsible for a specific domain or functionality. The image shows the architecture used for PlayPal:
+
+![Architecture Diagram](./docs/img/playpal_poc_architecture.png)
+
+In RED is everything provided by Exoscale. BLUE is for SaaS Services used. YELLOW are all self deployed 3rd party services.
+
 ### 📂 Project Structure
 The project is organized into a monorepo structure, with each microservice and the frontend application residing in its own subdirectory.
 ```
