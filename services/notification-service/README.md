@@ -14,9 +14,11 @@ Create a `.env` file in the root of the service with the following content:
 
 ```
 RESEND_API_KEY=your_api_key
+FROM_EMAIL=default@email.com
 ```
 
 Replace `your_api_key` with your actual Resend API key.
+Replace `default@email.com` with your default send_from email.
 
 ## Running the app
 
