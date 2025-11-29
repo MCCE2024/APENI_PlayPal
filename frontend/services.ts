@@ -1,5 +1,5 @@
 
-import { MatchRequest } from './types';
+import type { MatchRequest } from './types';
 
 const API_URL = 'http://localhost:3005/matching';
 

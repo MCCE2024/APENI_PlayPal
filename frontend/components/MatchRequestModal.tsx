@@ -1,12 +1,13 @@
 
-import React, { useState, FormEvent, useEffect } from 'react';
-import { Level, MatchRequest } from '../types';
+import type { FormEvent} from 'react';
+import React, { useState, useEffect } from 'react';
+import type { MatchRequest } from '../types';
+import { Level } from '../types';
 import { SPORTS, LEVELS } from '../constants';
 import { CloseIcon } from './icons/CloseIcon';
 import { TennisIcon } from './icons/TennisIcon';
 import { TrophyIcon } from './icons/TrophyIcon';
 import { LocationIcon } from './icons/LocationIcon';
-import { CalendarIcon } from './icons/CalendarIcon';
 
 interface MatchRequestModalProps {
   isOpen: boolean;

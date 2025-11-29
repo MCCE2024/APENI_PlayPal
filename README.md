@@ -103,6 +103,35 @@ docker-compose up --build
 
 This command will build Docker images for each service and start them as containers.
 
+### Development Guidelines
+To be written in more detail.
+
+* Trunk-Based Development (no Pull-Requests)
+* push only working code
+* integrate often
+* write tests -> write tests where appropriate (don't write tests for coverage)
+* format code before pushing -> pipeline will fail otherwise
+* no codechange without a ticket -> allowed update documentation or fix typos
+* use dependabot to keep dependencies up to date
+
+#### Commit Messages
+
+We follow a lightweight commit convention based on trunk-based development and GitHub issues.
+\Each commit must use the format `<type>: <short summary> (#<issue-number>)`. Types include feat, fix, docs, test with conventional commits. 
+\Example:`feat: add email validation to signup flow (#142)`
+
+### Design Guideline
+TBD
+
+### Project Management
+
+* Use Kanban Board
+* Issues must be tagged appropriately
+* Issues must have a type (bug, feature, etc.)
+* Issues must have a priority (must-have, nice-to-have, etc.)
+* Issues must have a estimation (Fibonacci score)
+
+
 ### 🤝 Contributing
 Contributions are welcome! Please follow these steps:
 
