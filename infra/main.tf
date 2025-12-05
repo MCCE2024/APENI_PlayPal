@@ -37,9 +37,10 @@ provider "exoscale" {
 
 # SKS (Managed Kubernetes) Cluster
 resource "exoscale_sks_cluster" "prod_cluster" {
-  zone    = var.exoscale_zone
-  name    = var.sks_cluster_name
-  version = var.sks_version
+  zone          = var.exoscale_zone
+  name          = var.sks_cluster_name
+  version       = var.sks_version
+  exoscale_csi  = true
 }
 
 resource "exoscale_sks_kubeconfig" "prod_cluster_kubeconfig" {
