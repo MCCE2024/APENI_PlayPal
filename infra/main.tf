@@ -123,12 +123,18 @@ output "prod_kafka_service_uri" {
 }
 
 provider "kubernetes" {
-  config_path = "kubeconfig"
+  host                   = yamldecode(exoscale_sks_kubeconfig.prod_cluster_kubeconfig.kubeconfig).clusters[0].cluster.server
+  cluster_ca_certificate = base64decode(yamldecode(exoscale_sks_kubeconfig.prod_cluster_kubeconfig.kubeconfig).clusters[0].cluster.certificate-authority-data)
+  client_certificate     = base64decode(yamldecode(exoscale_sks_kubeconfig.prod_cluster_kubeconfig.kubeconfig).users[0].user.client-certificate-data)
+  client_key             = base64decode(yamldecode(exoscale_sks_kubeconfig.prod_cluster_kubeconfig.kubeconfig).users[0].user.client-key-data)
 }
 
 provider "helm" {
   kubernetes {
-    config_path = "kubeconfig"
+    host                   = yamldecode(exoscale_sks_kubeconfig.prod_cluster_kubeconfig.kubeconfig).clusters[0].cluster.server
+    cluster_ca_certificate = base64decode(yamldecode(exoscale_sks_kubeconfig.prod_cluster_kubeconfig.kubeconfig).clusters[0].cluster.certificate-authority-data)
+    client_certificate     = base64decode(yamldecode(exoscale_sks_kubeconfig.prod_cluster_kubeconfig.kubeconfig).users[0].user.client-certificate-data)
+    client_key             = base64decode(yamldecode(exoscale_sks_kubeconfig.prod_cluster_kubeconfig.kubeconfig).users[0].user.client-key-data)
   }
 }
 
