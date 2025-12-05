@@ -5,8 +5,10 @@ terraform {
     endpoint = "https://sos-at-vie-1.exo.io"
     key      = "playpal/terraform.tfstate"
     region = "at-vie-1"
-    skip_region_validation  = true
+    skip_region_validation      = true
     skip_credentials_validation = true
+    skip_metadata_api_check     = true
+    skip_requesting_account_id  = true
   }
   required_providers {
     exoscale = {
