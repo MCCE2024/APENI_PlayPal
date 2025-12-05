@@ -74,8 +74,9 @@ resource "kubernetes_secret" "exoscale_csi_credentials" {
   type = "Opaque"
 
   data = {
-    api-key    = var.exoscale_api_key
-    api-secret = var.exoscale_api_secret
+    EXOSCALE_API_KEY    = var.exoscale_api_key
+    EXOSCALE_API_SECRET = var.exoscale_api_secret
+    EXOSCALE_ZONE       = var.exoscale_zone
   }
 
   depends_on = [
