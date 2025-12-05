@@ -6,6 +6,8 @@ on:
       - main
 
 env:
+  EXOSCALE_API_KEY: ${{ secrets.TF_VAR_EXOSCALE_API_KEY }}
+  EXOSCALE_API_SECRET: ${{ secrets.TF_VAR_EXOSCALE_API_SECRET }}
   KUBECONFIG_PATH: ${{ github.workspace }}/infra/kubeconfig
 
 jobs:
