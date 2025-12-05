@@ -8,6 +8,9 @@ on:
 env:
   EXOSCALE_API_KEY: ${{ secrets.EXOSCALE_API_KEY }}
   EXOSCALE_API_SECRET: ${{ secrets.EXOSCALE_API_SECRET }}
+  # Terraform S3 Backend Credentials (mapped to Exoscale keys)
+  AWS_ACCESS_KEY_ID: ${{ secrets.EXOSCALE_API_KEY }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.EXOSCALE_API_SECRET }}
   KUBECONFIG_PATH: ${{ github.workspace }}/infra/kubeconfig
 
 jobs:
