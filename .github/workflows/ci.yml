@@ -1,0 +1,61 @@
+name: CI Build, Test, Lint, and Publish Images
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build-test-lint-and-publish:
+    name: "${{ matrix.service.name }}: build/test/lint and docker publish"
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        service:
+          - name: frontend
+            workdir: frontend
+            image: frontend
+          - name: matching-service
+            workdir: services/matching-service
+            image: matching-service
+          - name: notification-service
+            workdir: services/notification-service
+            image: notification-service
+
+    defaults:
+      run:
+        working-directory: ${{ matrix.service.workdir }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: |
+            ${{ matrix.service.workdir }}/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Test
+        env:
+          CI: true
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+

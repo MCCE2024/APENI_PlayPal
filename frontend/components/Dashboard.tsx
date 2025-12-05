@@ -1,7 +1,7 @@
 
 import React, { useState, useCallback, useEffect } from 'react';
 import MatchRequestModal from './MatchRequestModal';
-import { MatchRequest } from '../types';
+import type { MatchRequest } from '../types';
 import { getMatchRequests, createMatchRequest } from '../services';
 
 const Dashboard: React.FC = () => {
@@ -105,7 +105,9 @@ const Dashboard: React.FC = () => {
       <MatchRequestModal
         isOpen={isModalOpen}
         onClose={closeModal}
-        onSubmit={handleRequestSubmit}
+        onSubmit={(p) => {
+            handleRequestSubmit(p);
+        }}
       />
     </div>
   );
