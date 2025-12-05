@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend-deployment
+  namespace: playpal
+  labels:
+    app: frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+        - name: frontend
+          image: YOUR_DOCKER_REGISTRY/playpal-frontend:latest # Placeholder for image, will be replaced by CI
+          ports:
+            - containerPort: 80
+          env:
+            - name: API_BASE_URL
+              value: "/api" # Assuming API Gateway or Ingress will handle routing

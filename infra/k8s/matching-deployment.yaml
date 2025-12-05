@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: matching-deployment
+  namespace: playpal
+  labels:
+    app: matching-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: matching-service
+  template:
+    metadata:
+      labels:
+        app: matching-service
+    spec:
+      containers:
+        - name: matching-service
+          image: YOUR_DOCKER_REGISTRY/playpal-matching-service:latest # Placeholder for image, will be replaced by CI
+          ports:
+            - containerPort: 3000
+          env:
+            - name: MONGODB_USER
+              value: "playpal_user" # As defined in mongodb Helm chart values.yaml
+            - name: MONGODB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mongodb # Name of the secret created by the mongodb Helm chart
+                  key: mongo-password # Key for the application user's password
+            - name: MONGODB_HOST
+              value: "mongodb" # Service name of the mongodb Helm chart release
+            - name: MONGODB_PORT
+              value: "27017"
+            - name: MONGODB_DATABASE
+              value: "playpal" # As defined in mongodb Helm chart values.yaml
+            - name: MONGODB_URI
+              value: "mongodb://$(MONGODB_USER):$(MONGODB_PASSWORD)@$(MONGODB_HOST):$(MONGODB_PORT)/$(MONGODB_DATABASE)?authSource=admin"
+            - name: KAFKA_BROKERS
+              valueFrom:
+                secretKeyRef:
+                  name: kafka-prod-credentials
+                  key: KAFKA_BROKERS
+            - name: KAFKA_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: kafka-prod-credentials
+                  key: KAFKA_SASL_USERNAME
+            - name: KAFKA_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: kafka-prod-credentials
+                  key: KAFKA_SASL_PASSWORD
+            # Add other environment variables as needed, potentially from a ConfigMap or Secret

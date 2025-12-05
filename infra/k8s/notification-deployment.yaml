@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notification-deployment
+  namespace: playpal
+  labels:
+    app: notification-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: notification-service
+  template:
+    metadata:
+      labels:
+        app: notification-service
+    spec:
+      containers:
+        - name: notification-service
+          image: YOUR_DOCKER_REGISTRY/playpal-notification-service:latest # Placeholder for image, will be replaced by CI
+          ports:
+            - containerPort: 3000
+          env:
+            - name: KAFKA_BROKERS
+              valueFrom:
+                secretKeyRef:
+                  name: kafka-prod-credentials
+                  key: KAFKA_BROKERS
+            - name: KAFKA_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: kafka-prod-credentials
+                  key: KAFKA_SASL_USERNAME
+            - name: KAFKA_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: kafka-prod-credentials
+                  key: KAFKA_SASL_PASSWORD
+            # Add other environment variables as needed, e.g., for email service (Resend)
+            # - name: RESEND_API_KEY
+            #   valueFrom:
+            #     secretKeyRef:
+            #       name: notification-secrets
+            #       key: RESEND_API_KEY

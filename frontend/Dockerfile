@@ -1,9 +1,19 @@
-# runtime-only Dockerfile: expects ./dist to be prebuilt by CI
-FROM nginx:1.27-alpine AS runner
+# Stage 1: Build the React application
+FROM node:20-alpine as builder
 
-# Copy prebuilt static assets from the build context
-COPY dist /usr/share/nginx/html
+WORKDIR /app
 
-# Default Nginx image already listens on 80
+COPY package.json package-lock.json ./
+RUN npm install
+
+COPY . ./
+RUN npm run build
+
+# Stage 2: Serve the application with Nginx
+FROM nginx:alpine
+
+COPY --from=builder /app/dist /usr/share/nginx/html
+
 EXPOSE 80
+
 CMD ["nginx", "-g", "daemon off;"]

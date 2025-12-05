@@ -21,6 +21,10 @@ terraform {
       source  = "hashicorp/kubernetes"
       version = "~> 2.38"
     }
+    helm = {
+      source  = "hashicorp/helm"
+      version = "~> 2.16"
+    }
   }
 }
 
@@ -120,10 +124,32 @@ provider "kubernetes" {
   config_path = "kubeconfig"
 }
 
+provider "helm" {
+  kubernetes {
+    config_path = "kubeconfig"
+  }
+}
+
 resource "kubernetes_namespace" "playpal_ns" {
   metadata {
     name = "playpal"
   }
+}
+
+resource "helm_release" "mongodb" {
+  name       = "mongodb"
+  chart      = "./charts/mongodb"
+  namespace  = kubernetes_namespace.playpal_ns.metadata[0].name
+
+  set {
+    name  = "auth.enabled"
+    value = "true"
+  }
+  
+  depends_on = [
+    local_sensitive_file.kubeconfig,
+    exoscale_sks_nodepool.prod_nodepool
+  ]
 }
 
 # Resource to create the Kubernetes Secret in the target cluster
