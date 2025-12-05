@@ -13,7 +13,7 @@ variable "sks_cluster_name" {
 variable "sks_version" {
   description = "The Kubernetes version for the SKS cluster."
   type        = string
-  default     = "1.34.2"
+  default     = "1.33.0"
 }
 
 variable "kafka_service_name" {
