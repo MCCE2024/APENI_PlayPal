@@ -65,6 +65,24 @@ resource "exoscale_sks_nodepool" "prod_nodepool" {
   size         = 3                   # As requested, 3 nodes
 }
 
+resource "kubernetes_secret" "exoscale_csi_credentials" {
+  metadata {
+    name      = "exoscale-credentials"
+    namespace = "kube-system"
+  }
+
+  type = "Opaque"
+
+  data = {
+    api-key    = var.exoscale_api_key
+    api-secret = var.exoscale_api_secret
+  }
+
+  depends_on = [
+    exoscale_sks_nodepool.prod_nodepool
+  ]
+}
+
 # DBaaS Kafka Service
 resource "exoscale_dbaas" "prod_kafka" {
   zone = var.exoscale_zone

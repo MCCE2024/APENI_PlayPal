@@ -1,4 +1,3 @@
-
 variable "exoscale_zone" {
   description = "The Exoscale zone to deploy resources in."
   type        = string
@@ -33,4 +32,16 @@ variable "kafka_plan" {
   description = "The service plan on Exoscale for DBaaS Kafka."
   type = string
   default = "startup-2"
+}
+
+variable "exoscale_api_key" {
+  description = "Exoscale API Key for CSI driver credentials"
+  type        = string
+  sensitive   = true
+}
+
+variable "exoscale_api_secret" {
+  description = "Exoscale API Secret for CSI driver credentials"
+  type        = string
+  sensitive   = true
 }
