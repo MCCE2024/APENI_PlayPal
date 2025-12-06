@@ -10,7 +10,7 @@ service:
   port: 27017
 
 persistence:
-  enabled: true
+  enabled: false
   storageClass: "exoscale-sbs"
   size: 8Gi
 

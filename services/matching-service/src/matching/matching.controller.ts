@@ -28,10 +28,8 @@ export class MatchingController {
    */
   @Post('run-batch')
   @HttpCode(HttpStatus.OK)
-  runBatch() {
-    // We don't await this so the HTTP request returns immediately
-    // The batch job will run in the background.
-    this.matchingService.runBatchMatching();
-    return { message: 'Batch matching process initiated.' };
+  async runBatch() {
+    const result = await this.matchingService.runBatchMatching();
+    return { message: 'Batch matching process finished.', ...result };
   }
 }

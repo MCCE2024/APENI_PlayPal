@@ -40,7 +40,7 @@ resource "exoscale_sks_cluster" "prod_cluster" {
   zone          = var.exoscale_zone
   name          = var.sks_cluster_name
   version       = var.sks_version
-  exoscale_csi  = true
+  exoscale_csi  = false
 }
 
 resource "exoscale_sks_kubeconfig" "prod_cluster_kubeconfig" {
@@ -67,7 +67,7 @@ resource "exoscale_sks_nodepool" "prod_nodepool" {
 
 resource "kubernetes_secret" "exoscale_csi_credentials" {
   metadata {
-    name      = "exoscale-credentials"
+    name      = "exoscale-csi-credentials"
     namespace = "kube-system"
   }
 
@@ -203,8 +203,27 @@ resource "kubernetes_secret" "kafka_prod_credentials" {
   
   # Ensure the Kafka service and its outputs are ready before creating the Secret
   depends_on = [
-    exoscale_dbaas.prod_kafka,
-    data.exoscale_database_uri.prod_kafka,
-    kubernetes_namespace.playpal_ns
-  ]
-}
+        exoscale_dbaas.prod_kafka,
+        data.exoscale_database_uri.prod_kafka,
+        kubernetes_namespace.playpal_ns
+      ]
+    }
+    
+    resource "kubernetes_namespace" "monitoring_ns" {
+      metadata {
+        name = "monitoring"
+      }
+    }
+    
+    resource "helm_release" "kube_prometheus_stack" {
+      name       = "kube-prometheus-stack"
+      repository = "https://prometheus-community.github.io/helm-charts"
+      chart      = "kube-prometheus-stack"
+      namespace  = kubernetes_namespace.monitoring_ns.metadata[0].name
+      
+      depends_on = [
+        local_sensitive_file.kubeconfig,
+        exoscale_sks_nodepool.prod_nodepool
+      ]
+    }
+    

@@ -2,6 +2,9 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { HttpService } from '@nestjs/axios';
+import { ConfigService } from '@nestjs/config';
+import { firstValueFrom } from 'rxjs';
 import { MatchingRequest, RequestStatus } from './schemas/matching-request.schema';
 import { CreateMatchingRequestDto } from './dto/create-matching-request.dto';
 
@@ -13,6 +16,8 @@ export class MatchingService {
   constructor(
     @InjectModel(MatchingRequest.name)
     private readonly matchingRequestModel: Model<MatchingRequest>,
+    private readonly httpService: HttpService,
+    private readonly configService: ConfigService,
   ) {}
 
   async create(createDto: CreateMatchingRequestDto): Promise<MatchingRequest> {
@@ -38,16 +43,24 @@ export class MatchingService {
   /**
    * The core batch matching algorithm.
    */
-  async runBatchMatching(): Promise<{ matchesMade: number }> {
-    // 1. Find all eligible requests (pending and starting at least 1 hour from now)
-    const oneHourFromNow = new Date(Date.now() + 60 * 60 * 1000);
+  async runBatchMatching(): Promise<{ matchesMade: number; logs: string[] }> {
+    const logs: string[] = [];
+    const log = (msg: string) => {
+      this.logger.log(msg);
+      logs.push(msg);
+    };
+
+    // 1. Find all eligible requests (pending and starting in the future)
+    const now = new Date();
     const pendingRequests = await this.matchingRequestModel.find({
       status: RequestStatus.PENDING,
-      dateTimeStart: { $gte: oneHourFromNow },
+      dateTimeStart: { $gte: now },
     }).sort({ createdAt: 'asc' }); // Process older requests first
 
+    log(`Found ${pendingRequests.length} pending requests eligible for matching.`);
+
     if (pendingRequests.length < 2) {
-      return { matchesMade: 0 };
+      return { matchesMade: 0, logs };
     }
 
     // 2. Group requests by their hard constraints (sport-level-location)
@@ -59,11 +72,14 @@ export class MatchingService {
       }
       requestGroups.get(key)!.push(req);
     }
+    
+    log(`Created ${requestGroups.size} grouping keys: ${Array.from(requestGroups.keys()).join(', ')}`);
 
     let matchesMade = 0;
     
     // 3. Iterate through each group and attempt to match pairs
-    for (const group of requestGroups.values()) {
+    for (const [key, group] of requestGroups.entries()) {
+      log(`Processing group '${key}' with ${group.length} requests.`);
       while (group.length >= 2) {
         const requester = group.shift()!; // Take the first person from the group
         let matchedPartnerIndex = -1;
@@ -74,6 +90,8 @@ export class MatchingService {
           const hasOverlap = 
             requester.dateTimeStart <= partner.dateTimeEnd &&
             requester.dateTimeEnd >= partner.dateTimeStart;
+          
+          log(`Comparing ${requester._id} (${requester.dateTimeStart}-${requester.dateTimeEnd}) with ${partner._id} (${partner.dateTimeStart}-${partner.dateTimeEnd}). Overlap: ${hasOverlap}`);
 
           if (hasOverlap) {
             matchedPartnerIndex = i;
@@ -87,11 +105,14 @@ export class MatchingService {
           // 4. Update both requests in the database
           await this.createMatch(requester, partner);
           matchesMade++;
+          log(`Matched ${requester._id} with ${partner._id}`);
+        } else {
+             log(`No partner found for ${requester._id} in group ${key}`);
         }
       }
     }
 
-    return { matchesMade };
+    return { matchesMade, logs };
   }
 
   private async createMatch(req1: MatchingRequest, req2: MatchingRequest) {
@@ -112,6 +133,44 @@ export class MatchingService {
     ]);
     
     this.logger.log(`Created match: ${req1.userEmail} vs ${req2.userEmail}`);
-    // In a real app, you would emit an event here to notify users
+    
+    // Send email notifications
+    const notificationUrl = this.configService.get<string>('NOTIFICATION_SERVICE_URL');
+    if (notificationUrl) {
+      try {
+        const emailSubject = 'You have a new match on PlayPal!';
+        const emailBody = (opponent: MatchingRequest) => `
+          <h1>Match Found!</h1>
+          <p>You have been matched for a game of <strong>${opponent.sport}</strong>.</p>
+          <p><strong>Opponent:</strong> ${opponent.userEmail} (Level: ${opponent.level})</p>
+          <p><strong>Location:</strong> ${opponent.location}</p>
+          <p><strong>Time:</strong> ${new Date(opponent.dateTimeStart).toLocaleString()} - ${new Date(opponent.dateTimeEnd).toLocaleTimeString()}</p>
+        `;
+
+        // Notify User 1
+        await firstValueFrom(
+          this.httpService.post(`${notificationUrl}/notification/send-email`, {
+            to: req1.userEmail,
+            subject: emailSubject,
+            html: emailBody(req2),
+          })
+        );
+
+        // Notify User 2
+        await firstValueFrom(
+          this.httpService.post(`${notificationUrl}/notification/send-email`, {
+            to: req2.userEmail,
+            subject: emailSubject,
+            html: emailBody(req1),
+          })
+        );
+        
+        this.logger.log(`Sent match notifications to ${req1.userEmail} and ${req2.userEmail}`);
+      } catch (error) {
+        this.logger.error(`Failed to send match notifications: ${error.message}`);
+      }
+    } else {
+        this.logger.warn('NOTIFICATION_SERVICE_URL not set. Skipping email notifications.');
+    }
   }
 }
