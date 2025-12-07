@@ -30,8 +30,8 @@ variable "kafka_version" {
 
 variable "kafka_plan" {
   description = "The service plan on Exoscale for DBaaS Kafka."
-  type = string
-  default = "startup-2"
+  type        = string
+  default     = "startup-2"
 }
 
 variable "exoscale_api_key" {
