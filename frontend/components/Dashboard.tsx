@@ -1,10 +1,13 @@
-
 import React, { useState, useCallback, useEffect } from 'react';
 import MatchRequestModal from './MatchRequestModal';
 import type { MatchRequest } from '../types';
 import { getMatchRequests, createMatchRequest } from '../services';
 
-const Dashboard: React.FC = () => {
+interface DashboardProps {
+  userEmail: string | null;
+}
+
+const Dashboard: React.FC<DashboardProps> = ({ userEmail }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [matchRequests, setMatchRequests] = useState<MatchRequest[]>([]);
 
@@ -25,11 +28,16 @@ const Dashboard: React.FC = () => {
   }, [fetchMatchRequests]);
 
   const handleRequestSubmit = async (request: Omit<MatchRequest, '_id'>) => {
+    if (!userEmail) {
+      console.error('User email is not available.');
+      return;
+    }
     try {
+      const userId = userEmail.split('@')[0];
       const fullRequest = {
         ...request,
-        userId: 'user-c-789', // Hardcoded for now
-        userEmail: 'user.c@example.com', // Hardcoded for now
+        userId,
+        userEmail,
       };
       await createMatchRequest(fullRequest);
       closeModal();
