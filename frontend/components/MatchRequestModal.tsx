@@ -15,6 +15,19 @@ interface MatchRequestModalProps {
   onSubmit: (request: Omit<MatchRequest, '_id'>) => void;
 }
 
+// NOTE: Define InputGroup outside of the component to keep a stable identity across renders.
+// Defining it inside causes React to treat it as a new component each render and may remount
+// its subtree, leading to input focus loss.
+const InputGroup: React.FC<{ label: string; children: React.ReactNode; icon?: React.ReactNode }> = ({ label, children, icon }) => (
+  <div>
+    <label className="flex items-center mb-2 text-sm font-medium text-slate-300">
+      {icon && <span className="mr-2">{icon}</span>}
+      {label}
+    </label>
+    {children}
+  </div>
+);
+
 const MatchRequestModal: React.FC<MatchRequestModalProps> = ({ isOpen, onClose, onSubmit }) => {
   const [sport, setSport] = useState<string>(SPORTS[0]);
   const [level, setLevel] = useState<Level>(Level.INTERMEDIATE);
@@ -43,16 +56,6 @@ const MatchRequestModal: React.FC<MatchRequestModalProps> = ({ isOpen, onClose, 
   };
 
   if (!isOpen) return null;
-
-  const InputGroup: React.FC<{ label: string; children: React.ReactNode, icon?: React.ReactNode }> = ({ label, children, icon }) => (
-    <div>
-      <label className="flex items-center mb-2 text-sm font-medium text-slate-300">
-        {icon && <span className="mr-2">{icon}</span>}
-        {label}
-      </label>
-      {children}
-    </div>
-  );
 
   const commonInputClasses = "w-full bg-slate-700/50 border border-slate-600 rounded-md py-2 px-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400 transition";
 
