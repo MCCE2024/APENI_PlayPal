@@ -5,17 +5,22 @@ import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  const kafkaUsername = process.env.KAFKA_USERNAME;
+  const kafkaPassword = process.env.KAFKA_PASSWORD;
+
   app.connectMicroservice<MicroserviceOptions>({
     transport: Transport.KAFKA,
     options: {
       client: {
         brokers: (process.env.KAFKA_BROKERS || 'localhost:9092').split(','),
-        ssl: true,
-        sasl: {
-          mechanism: 'plain',
-          username: process.env.KAFKA_USERNAME || '',
-          password: process.env.KAFKA_PASSWORD || '',
-        },
+        ssl: !!kafkaUsername,
+        sasl: kafkaUsername
+          ? {
+              mechanism: 'plain',
+              username: kafkaUsername,
+              password: kafkaPassword || '',
+            }
+          : undefined,
       },
       consumer: {
         groupId: 'notification-service-group',

@@ -20,26 +20,32 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
       {
         name: 'NOTIFICATION_SERVICE',
         imports: [ConfigModule],
-        useFactory: (configService: ConfigService) => ({
-          transport: Transport.KAFKA,
-          options: {
-            client: {
-              clientId: 'matching-service',
-              brokers: (
-                configService.get<string>('KAFKA_BROKERS') || 'localhost:9092'
-              ).split(','),
-              ssl: true,
-              sasl: {
-                mechanism: 'plain',
-                username: configService.get<string>('KAFKA_USERNAME') || '',
-                password: configService.get<string>('KAFKA_PASSWORD') || '',
+        useFactory: (configService: ConfigService) => {
+          const kafkaUsername = configService.get<string>('KAFKA_USERNAME');
+          const kafkaPassword = configService.get<string>('KAFKA_PASSWORD');
+          return {
+            transport: Transport.KAFKA,
+            options: {
+              client: {
+                clientId: 'matching-service',
+                brokers: (
+                  configService.get<string>('KAFKA_BROKERS') || 'localhost:9092'
+                ).split(','),
+                ssl: !!kafkaUsername,
+                sasl: kafkaUsername
+                  ? {
+                      mechanism: 'plain',
+                      username: kafkaUsername,
+                      password: kafkaPassword || '',
+                    }
+                  : undefined,
+              },
+              consumer: {
+                groupId: 'matching-service-consumer',
               },
             },
-            consumer: {
-              groupId: 'matching-service-consumer',
-            },
-          },
-        }),
+          };
+        },
         inject: [ConfigService],
       },
     ]),
