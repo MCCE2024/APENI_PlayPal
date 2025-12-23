@@ -1,10 +1,9 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Inject } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
-import { firstValueFrom } from 'rxjs';
+import { ClientProxy } from '@nestjs/microservices';
 import {
   MatchingRequest,
   RequestStatus,
@@ -19,7 +18,8 @@ export class MatchingService {
   constructor(
     @InjectModel(MatchingRequest.name)
     private readonly matchingRequestModel: Model<MatchingRequest>,
-    private readonly httpService: HttpService,
+    @Inject('NOTIFICATION_SERVICE')
+    private readonly notificationClient: ClientProxy,
     private readonly configService: ConfigService,
   ) {}
 
@@ -159,53 +159,30 @@ export class MatchingService {
 
     this.logger.log(`Created match: ${req1.userEmail} vs ${req2.userEmail}`);
 
-    // Send email notifications
-    const notificationUrl = this.configService.get<string>(
-      'NOTIFICATION_SERVICE_URL',
+    const emailSubject = 'You have a new match on PlayPal!';
+    const emailBody = (opponent: MatchingRequest) => `
+      <h1>Match Found!</h1>
+      <p>You have been matched for a game of <strong>${opponent.sport}</strong>.</p>
+      <p><strong>Opponent:</strong> ${opponent.userEmail} (Level: ${opponent.level})</p>
+      <p><strong>Location:</strong> ${opponent.location}</p>
+      <p><strong>Time:</strong> ${new Date(opponent.dateTimeStart).toLocaleString()} - ${new Date(opponent.dateTimeEnd).toLocaleTimeString()}</p>
+    `;
+
+    // Emit events to Kafka
+    this.notificationClient.emit('matches.matched', {
+      to: req1.userEmail,
+      subject: emailSubject,
+      html: emailBody(req2),
+    });
+
+    this.notificationClient.emit('matches.matched', {
+      to: req2.userEmail,
+      subject: emailSubject,
+      html: emailBody(req1),
+    });
+
+    this.logger.log(
+      `Sent match notification events for ${req1.userEmail} and ${req2.userEmail}`,
     );
-    if (notificationUrl) {
-      try {
-        const emailSubject = 'You have a new match on PlayPal!';
-        const emailBody = (opponent: MatchingRequest) => `
-          <h1>Match Found!</h1>
-          <p>You have been matched for a game of <strong>${opponent.sport}</strong>.</p>
-          <p><strong>Opponent:</strong> ${opponent.userEmail} (Level: ${opponent.level})</p>
-          <p><strong>Location:</strong> ${opponent.location}</p>
-          <p><strong>Time:</strong> ${new Date(opponent.dateTimeStart).toLocaleString()} - ${new Date(opponent.dateTimeEnd).toLocaleTimeString()}</p>
-        `;
-
-        // Notify User 1
-        await firstValueFrom(
-          this.httpService.post(`${notificationUrl}/notification/send-email`, {
-            to: req1.userEmail,
-            subject: emailSubject,
-            html: emailBody(req2),
-          }),
-        );
-
-        // Notify User 2
-        await firstValueFrom(
-          this.httpService.post(`${notificationUrl}/notification/send-email`, {
-            to: req2.userEmail,
-            subject: emailSubject,
-            html: emailBody(req1),
-          }),
-        );
-
-        this.logger.log(
-          `Sent match notifications to ${req1.userEmail} and ${req2.userEmail}`,
-        );
-      } catch (error) {
-        const errorMessage =
-          error instanceof Error ? error.message : String(error);
-        this.logger.error(
-          `Failed to send match notifications: ${errorMessage}`,
-        );
-      }
-    } else {
-      this.logger.warn(
-        'NOTIFICATION_SERVICE_URL not set. Skipping email notifications.',
-      );
-    }
   }
 }

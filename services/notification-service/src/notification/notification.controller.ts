@@ -1,13 +1,16 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import { Controller } from '@nestjs/common';
+import { EventPattern, Payload } from '@nestjs/microservices';
 import { NotificationService } from './notification.service';
 
 @Controller('notification')
 export class NotificationController {
   constructor(private readonly notificationService: NotificationService) {}
 
-  @Post('send-email')
-  async sendEmail(@Body() body: { to: string; subject: string; html: string }) {
-    const { to, subject, html } = body;
-    return this.notificationService.sendEmail(to, subject, html);
+  @EventPattern('matches.matched')
+  async handleMatchFound(
+    @Payload() data: { to: string; subject: string; html: string },
+  ) {
+    const { to, subject, html } = data;
+    await this.notificationService.sendEmail(to, subject, html);
   }
 }
