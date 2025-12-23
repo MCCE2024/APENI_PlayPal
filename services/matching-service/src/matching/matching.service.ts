@@ -159,26 +159,31 @@ export class MatchingService {
 
     this.logger.log(`Created match: ${req1.userEmail} vs ${req2.userEmail}`);
 
-    const emailSubject = 'You have a new match on PlayPal!';
-    const emailBody = (opponent: MatchingRequest) => `
-      <h1>Match Found!</h1>
-      <p>You have been matched for a game of <strong>${opponent.sport}</strong>.</p>
-      <p><strong>Opponent:</strong> ${opponent.userEmail} (Level: ${opponent.level})</p>
-      <p><strong>Location:</strong> ${opponent.location}</p>
-      <p><strong>Time:</strong> ${new Date(opponent.dateTimeStart).toLocaleString()} - ${new Date(opponent.dateTimeEnd).toLocaleTimeString()}</p>
-    `;
-
-    // Emit events to Kafka
+    // Emit events to Kafka with structured data
+    // Notify User 1
     this.notificationClient.emit('matches.matched', {
-      to: req1.userEmail,
-      subject: emailSubject,
-      html: emailBody(req2),
+      recipientEmail: req1.userEmail,
+      opponent: {
+        email: req2.userEmail,
+        level: req2.level,
+        sport: req2.sport,
+        location: req2.location,
+        dateTimeStart: req2.dateTimeStart.toISOString(),
+        dateTimeEnd: req2.dateTimeEnd.toISOString(),
+      },
     });
 
+    // Notify User 2
     this.notificationClient.emit('matches.matched', {
-      to: req2.userEmail,
-      subject: emailSubject,
-      html: emailBody(req1),
+      recipientEmail: req2.userEmail,
+      opponent: {
+        email: req1.userEmail,
+        level: req1.level,
+        sport: req1.sport,
+        location: req1.location,
+        dateTimeStart: req1.dateTimeStart.toISOString(),
+        dateTimeEnd: req1.dateTimeEnd.toISOString(),
+      },
     });
 
     this.logger.log(
