@@ -4,8 +4,9 @@ import type { MatchRequest } from './types';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3005';
 const API_URL = `${API_BASE_URL}/matching`;
 
-export const getMatchRequests = async (): Promise<MatchRequest[]> => {
-  const response = await fetch(`${API_URL}/requests`);
+export const getMatchRequests = async (userEmail?: string): Promise<MatchRequest[]> => {
+  const url = userEmail ? `${API_URL}/requests?userEmail=${encodeURIComponent(userEmail)}` : `${API_URL}/requests`;
+  const response = await fetch(url);
   if (!response.ok) {
     throw new Error('Failed to fetch match requests');
   }

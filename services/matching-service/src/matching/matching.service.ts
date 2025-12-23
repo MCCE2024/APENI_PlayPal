@@ -28,8 +28,9 @@ export class MatchingService {
     return newRequest.save();
   }
 
-  async findAll(): Promise<MatchingRequest[]> {
-    return this.matchingRequestModel.find().exec();
+  async findAll(userEmail?: string): Promise<MatchingRequest[]> {
+    const filter = userEmail ? { userEmail } : {};
+    return this.matchingRequestModel.find(filter).exec();
   }
 
   /**

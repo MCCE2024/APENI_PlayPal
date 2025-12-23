@@ -15,13 +15,14 @@ const Dashboard: React.FC<DashboardProps> = ({ userEmail }) => {
   const closeModal = useCallback(() => setIsModalOpen(false), []);
 
   const fetchMatchRequests = useCallback(async () => {
+    if (!userEmail) return;
     try {
-      const requests = await getMatchRequests();
+      const requests = await getMatchRequests(userEmail);
       setMatchRequests(requests);
     } catch (error) {
       console.error('Failed to fetch match requests:', error);
     }
-  }, []);
+  }, [userEmail]);
 
   useEffect(() => {
     void fetchMatchRequests();

@@ -5,6 +5,7 @@ import {
   HttpCode,
   HttpStatus,
   Get,
+  Query,
 } from '@nestjs/common';
 import { MatchingService } from './matching.service';
 import { CreateMatchingRequestDto } from './dto/create-matching-request.dto';
@@ -14,8 +15,8 @@ export class MatchingController {
   constructor(private readonly matchingService: MatchingService) {}
 
   @Get('requests')
-  findAll() {
-    return this.matchingService.findAll();
+  findAll(@Query('userEmail') userEmail: string) {
+    return this.matchingService.findAll(userEmail);
   }
 
   /**
