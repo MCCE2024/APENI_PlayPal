@@ -9,7 +9,6 @@ export enum SportType {
   TABLE_TENNIS = 'Table Tennis',
   CHESS = 'Chess',
   GOLF = 'Golf',
-
 }
 
 export enum SkillLevel {
@@ -50,8 +49,13 @@ export class MatchingRequest extends Document {
   @Prop({ required: true, enum: RequestStatus, default: RequestStatus.PENDING })
   status: RequestStatus;
 
-  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'MatchingRequest', default: null })
+  @Prop({
+    type: MongooseSchema.Types.ObjectId,
+    ref: 'MatchingRequest',
+    default: null,
+  })
   matchedWithRequestId: MongooseSchema.Types.ObjectId;
 }
 
-export const MatchingRequestSchema = SchemaFactory.createForClass(MatchingRequest);
+export const MatchingRequestSchema =
+  SchemaFactory.createForClass(MatchingRequest);

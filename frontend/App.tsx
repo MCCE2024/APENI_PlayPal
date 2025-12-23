@@ -11,14 +11,14 @@ const App: React.FC = () => {
     try {
       const stored = localStorage.getItem('playpal:isLoggedIn');
       return stored === 'true';
-    } catch (_) {
+    } catch {
       return false;
     }
   });
   const [userEmail, setUserEmail] = useState<string | null>(() => {
     try {
       return localStorage.getItem('playpal:userEmail');
-    } catch (_) {
+    } catch {
       return null;
     }
   });
@@ -35,7 +35,7 @@ const App: React.FC = () => {
     try {
       localStorage.setItem('playpal:isLoggedIn', 'true');
       localStorage.setItem('playpal:userEmail', email);
-    } catch (_) {
+    } catch {
       // ignore storage errors
     }
   }, []);
@@ -46,7 +46,7 @@ const App: React.FC = () => {
     try {
       localStorage.setItem('playpal:isLoggedIn', 'false');
       localStorage.removeItem('playpal:userEmail');
-    } catch (_) {
+    } catch {
       // ignore storage errors
     }
   }, []);

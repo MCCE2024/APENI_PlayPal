@@ -5,7 +5,10 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 import { firstValueFrom } from 'rxjs';
-import { MatchingRequest, RequestStatus } from './schemas/matching-request.schema';
+import {
+  MatchingRequest,
+  RequestStatus,
+} from './schemas/matching-request.schema';
 import { CreateMatchingRequestDto } from './dto/create-matching-request.dto';
 
 @Injectable()
@@ -37,7 +40,9 @@ export class MatchingService {
   async handleCron() {
     this.logger.log('Running batch matching process...');
     const result = await this.runBatchMatching();
-    this.logger.log(`Batch matching process finished. ${result.matchesMade} matches created.`);
+    this.logger.log(
+      `Batch matching process finished. ${result.matchesMade} matches created.`,
+    );
   }
 
   /**
@@ -52,12 +57,16 @@ export class MatchingService {
 
     // 1. Find all eligible requests (pending and starting in the future)
     const now = new Date();
-    const pendingRequests = await this.matchingRequestModel.find({
-      status: RequestStatus.PENDING,
-      dateTimeStart: { $gte: now },
-    }).sort({ createdAt: 'asc' }); // Process older requests first
+    const pendingRequests = await this.matchingRequestModel
+      .find({
+        status: RequestStatus.PENDING,
+        dateTimeStart: { $gte: now },
+      })
+      .sort({ createdAt: 'asc' }); // Process older requests first
 
-    log(`Found ${pendingRequests.length} pending requests eligible for matching.`);
+    log(
+      `Found ${pendingRequests.length} pending requests eligible for matching.`,
+    );
 
     if (pendingRequests.length < 2) {
       return { matchesMade: 0, logs };
@@ -72,11 +81,13 @@ export class MatchingService {
       }
       requestGroups.get(key)!.push(req);
     }
-    
-    log(`Created ${requestGroups.size} grouping keys: ${Array.from(requestGroups.keys()).join(', ')}`);
+
+    log(
+      `Created ${requestGroups.size} grouping keys: ${Array.from(requestGroups.keys()).join(', ')}`,
+    );
 
     let matchesMade = 0;
-    
+
     // 3. Iterate through each group and attempt to match pairs
     for (const [key, group] of requestGroups.entries()) {
       log(`Processing group '${key}' with ${group.length} requests.`);
@@ -87,11 +98,13 @@ export class MatchingService {
         // Find the first available partner with an overlapping time window
         for (let i = 0; i < group.length; i++) {
           const partner = group[i];
-          const hasOverlap = 
+          const hasOverlap =
             requester.dateTimeStart <= partner.dateTimeEnd &&
             requester.dateTimeEnd >= partner.dateTimeStart;
-          
-          log(`Comparing ${requester._id} (${requester.dateTimeStart}-${requester.dateTimeEnd}) with ${partner._id} (${partner.dateTimeStart}-${partner.dateTimeEnd}). Overlap: ${hasOverlap}`);
+
+          log(
+            `Comparing ${String(requester._id)} (${requester.dateTimeStart.toISOString()}-${requester.dateTimeEnd.toISOString()}) with ${String(partner._id)} (${partner.dateTimeStart.toISOString()}-${partner.dateTimeEnd.toISOString()}). Overlap: ${hasOverlap}`,
+          );
 
           if (hasOverlap) {
             matchedPartnerIndex = i;
@@ -101,13 +114,13 @@ export class MatchingService {
 
         if (matchedPartnerIndex !== -1) {
           const partner = group.splice(matchedPartnerIndex, 1)[0];
-          
+
           // 4. Update both requests in the database
           await this.createMatch(requester, partner);
           matchesMade++;
-          log(`Matched ${requester._id} with ${partner._id}`);
+          log(`Matched ${String(requester._id)} with ${String(partner._id)}`);
         } else {
-             log(`No partner found for ${requester._id} in group ${key}`);
+          log(`No partner found for ${String(requester._id)} in group ${key}`);
         }
       }
     }
@@ -121,21 +134,35 @@ export class MatchingService {
       {
         updateOne: {
           filter: { _id: req1._id },
-          update: { $set: { status: RequestStatus.MATCHED, matchedWithRequestId: req2._id, updatedAt: now } },
+          update: {
+            $set: {
+              status: RequestStatus.MATCHED,
+              matchedWithRequestId: req2._id,
+              updatedAt: now,
+            },
+          },
         },
       },
       {
         updateOne: {
           filter: { _id: req2._id },
-          update: { $set: { status: RequestStatus.MATCHED, matchedWithRequestId: req1._id, updatedAt: now } },
+          update: {
+            $set: {
+              status: RequestStatus.MATCHED,
+              matchedWithRequestId: req1._id,
+              updatedAt: now,
+            },
+          },
         },
       },
     ]);
-    
+
     this.logger.log(`Created match: ${req1.userEmail} vs ${req2.userEmail}`);
-    
+
     // Send email notifications
-    const notificationUrl = this.configService.get<string>('NOTIFICATION_SERVICE_URL');
+    const notificationUrl = this.configService.get<string>(
+      'NOTIFICATION_SERVICE_URL',
+    );
     if (notificationUrl) {
       try {
         const emailSubject = 'You have a new match on PlayPal!';
@@ -153,7 +180,7 @@ export class MatchingService {
             to: req1.userEmail,
             subject: emailSubject,
             html: emailBody(req2),
-          })
+          }),
         );
 
         // Notify User 2
@@ -162,15 +189,23 @@ export class MatchingService {
             to: req2.userEmail,
             subject: emailSubject,
             html: emailBody(req1),
-          })
+          }),
         );
-        
-        this.logger.log(`Sent match notifications to ${req1.userEmail} and ${req2.userEmail}`);
+
+        this.logger.log(
+          `Sent match notifications to ${req1.userEmail} and ${req2.userEmail}`,
+        );
       } catch (error) {
-        this.logger.error(`Failed to send match notifications: ${error.message}`);
+        const errorMessage =
+          error instanceof Error ? error.message : String(error);
+        this.logger.error(
+          `Failed to send match notifications: ${errorMessage}`,
+        );
       }
     } else {
-        this.logger.warn('NOTIFICATION_SERVICE_URL not set. Skipping email notifications.');
+      this.logger.warn(
+        'NOTIFICATION_SERVICE_URL not set. Skipping email notifications.',
+      );
     }
   }
 }

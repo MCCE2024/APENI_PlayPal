@@ -24,7 +24,7 @@ const Dashboard: React.FC<DashboardProps> = ({ userEmail }) => {
   }, []);
 
   useEffect(() => {
-    fetchMatchRequests();
+    void fetchMatchRequests();
   }, [fetchMatchRequests]);
 
   const handleRequestSubmit = async (request: Omit<MatchRequest, '_id'>) => {
@@ -41,7 +41,7 @@ const Dashboard: React.FC<DashboardProps> = ({ userEmail }) => {
       };
       await createMatchRequest(fullRequest);
       closeModal();
-      fetchMatchRequests();
+      await fetchMatchRequests();
     } catch (error) {
       console.error('Failed to create match request:', error);
     }
@@ -114,7 +114,7 @@ const Dashboard: React.FC<DashboardProps> = ({ userEmail }) => {
         isOpen={isModalOpen}
         onClose={closeModal}
         onSubmit={(p) => {
-            handleRequestSubmit(p);
+            void handleRequestSubmit(p);
         }}
       />
     </div>

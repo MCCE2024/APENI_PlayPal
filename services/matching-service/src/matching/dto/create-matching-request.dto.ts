@@ -1,4 +1,10 @@
-import { IsString, IsEmail, IsEnum, IsDateString, IsNotEmpty } from 'class-validator';
+import {
+  IsString,
+  IsEmail,
+  IsEnum,
+  IsDateString,
+  IsNotEmpty,
+} from 'class-validator';
 import { SportType, SkillLevel } from '../schemas/matching-request.schema';
 
 export class CreateMatchingRequestDto {

@@ -30,7 +30,9 @@ export class NotificationService {
 
       return data;
     } catch (error) {
-      throw new Error(`Failed to send email: ${error.message}`);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      throw new Error(`Failed to send email: ${errorMessage}`);
     }
   }
 }

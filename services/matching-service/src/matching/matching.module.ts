@@ -3,7 +3,10 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { HttpModule } from '@nestjs/axios';
 import { MatchingController } from './matching.controller';
 import { MatchingService } from './matching.service';
-import { MatchingRequest, MatchingRequestSchema } from './schemas/matching-request.schema';
+import {
+  MatchingRequest,
+  MatchingRequestSchema,
+} from './schemas/matching-request.schema';
 
 @Module({
   imports: [
