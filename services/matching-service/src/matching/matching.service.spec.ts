@@ -6,12 +6,7 @@ import { MatchingRequest } from './schemas/matching-request.schema';
 
 describe('MatchingService', () => {
   let service: MatchingService;
-  let model: any;
-
-  const mockMatchingRequest = (data) => ({
-    ...data,
-    save: jest.fn().mockResolvedValue(data),
-  });
+  let model: { find: jest.Mock; save: jest.Mock; bulkWrite: jest.Mock };
 
   const mockModel = {
     find: jest.fn(),
@@ -51,7 +46,7 @@ describe('MatchingService', () => {
     it('should filter by userEmail when provided', async () => {
       const userEmail = 'test@example.com';
       const mockResult = [{ userEmail, sport: 'Tennis' }];
-      
+
       model.find.mockReturnValue({
         exec: jest.fn().mockResolvedValue(mockResult),
       });
@@ -81,6 +76,7 @@ describe('MatchingService', () => {
       expect(model.find).toHaveBeenCalledWith(
         expect.objectContaining({
           status: 'Pending',
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           dateTimeEnd: { $gte: expect.any(Date) },
         }),
       );
