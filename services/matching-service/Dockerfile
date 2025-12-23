@@ -1,22 +1,13 @@
-# Stage 1: Build the NestJS application
-FROM node:20-alpine as builder
-
-WORKDIR /app
-
-COPY package.json package-lock.json tsconfig.json nest-cli.json ./
-COPY src ./src
-
-RUN npm install
-RUN npm run build
-
-# Stage 2: Run the application
 FROM node:20-alpine
 
 WORKDIR /app
 
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/package.json ./package.json
+# Copy package files and install only production dependencies
+COPY package.json package-lock.json ./
+RUN npm ci --only=production --ignore-scripts
+
+# Copy the pre-built application from the CI environment
+COPY dist ./dist
 
 EXPOSE 3000
 
