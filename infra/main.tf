@@ -262,6 +262,23 @@ resource "kubernetes_secret" "kafka_prod_credentials" {
   ]
 }
 
+resource "kubernetes_secret" "notification_secrets" {
+  metadata {
+    name      = "notification-secrets"
+    namespace = "playpal"
+  }
+
+  type = "Opaque"
+
+  data = {
+    RESEND_API_KEY = var.resend_api_key
+  }
+
+  depends_on = [
+    kubernetes_namespace.playpal_ns
+  ]
+}
+
 resource "kubernetes_namespace" "monitoring_ns" {
   metadata {
     name = "monitoring"

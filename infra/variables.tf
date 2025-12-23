@@ -45,3 +45,10 @@ variable "exoscale_api_secret" {
   type        = string
   sensitive   = true
 }
+
+variable "resend_api_key" {
+  description = "API Key for Resend email service"
+  type        = string
+  sensitive   = true
+  default     = "" # Optional, so it doesn't break if not provided immediately
+}

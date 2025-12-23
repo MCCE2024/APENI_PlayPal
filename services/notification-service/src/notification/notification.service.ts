@@ -8,9 +8,16 @@ export class NotificationService {
   private readonly logger = new Logger(NotificationService.name);
 
   constructor(private readonly configService: ConfigService) {
-    const apiKey = process.env.RESEND_API_KEY;
-    if (apiKey) {
+    const apiKey = this.configService.get<string>('RESEND_API_KEY');
+    const nodeEnv = this.configService.get<string>('NODE_ENV');
+    const enableRealEmails = this.configService.get<string>('ENABLE_REAL_EMAILS') === 'true';
+
+    // Only enable real email sending in production or if explicitly enabled
+    if (apiKey && (nodeEnv === 'production' || enableRealEmails)) {
       this.resend = new Resend(apiKey);
+      this.logger.log('Real email sending ENABLED.');
+    } else if (apiKey) {
+      this.logger.log('Resend API Key found but real email sending is DISABLED (dev mode). Set ENABLE_REAL_EMAILS=true to enable.');
     }
   }
 

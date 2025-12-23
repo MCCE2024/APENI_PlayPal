@@ -28,9 +28,11 @@ export class MatchingService {
     return newRequest.save();
   }
 
-  async findAll(userEmail?: string): Promise<MatchingRequest[]> {
-    const filter = userEmail ? { userEmail } : {};
-    return this.matchingRequestModel.find(filter).exec();
+  async findAll(userEmail: string): Promise<MatchingRequest[]> {
+    if (!userEmail) {
+      return [];
+    }
+    return this.matchingRequestModel.find({ userEmail }).exec();
   }
 
   /**
@@ -61,7 +63,7 @@ export class MatchingService {
     const pendingRequests = await this.matchingRequestModel
       .find({
         status: RequestStatus.PENDING,
-        dateTimeStart: { $gte: now },
+        dateTimeEnd: { $gte: now },
       })
       .sort({ createdAt: 'asc' }); // Process older requests first
 

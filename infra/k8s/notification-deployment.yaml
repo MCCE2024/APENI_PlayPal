@@ -36,9 +36,11 @@ spec:
                 secretKeyRef:
                   name: kafka-prod-credentials
                   key: KAFKA_SASL_PASSWORD
+            - name: NODE_ENV
+              value: "production"
             # Add other environment variables as needed, e.g., for email service (Resend)
-            # - name: RESEND_API_KEY
-            #   valueFrom:
-            #     secretKeyRef:
-            #       name: notification-secrets
-            #       key: RESEND_API_KEY
+            - name: RESEND_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: notification-secrets
+                  key: RESEND_API_KEY

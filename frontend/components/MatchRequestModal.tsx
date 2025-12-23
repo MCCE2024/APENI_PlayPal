@@ -50,8 +50,8 @@ const MatchRequestModal: React.FC<MatchRequestModalProps> = ({ isOpen, onClose, 
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    const dateTimeStart = `${dateFrom}T${timeFrom}:00.000Z`;
-    const dateTimeEnd = `${dateTo}T${timeTo}:00.000Z`;
+    const dateTimeStart = new Date(`${dateFrom}T${timeFrom}`).toISOString();
+    const dateTimeEnd = new Date(`${dateTo}T${timeTo}`).toISOString();
     onSubmit({ sport, level, location, dateTimeStart, dateTimeEnd });
   };
 
