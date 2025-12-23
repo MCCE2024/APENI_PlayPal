@@ -1,7 +1,10 @@
 name: Deploy to Kubernetes
 
 on:
-  push:
+  workflow_run:
+    workflows: ["CI Build, Test, Lint, and Publish Images"]
+    types:
+      - completed
     branches:
       - main
 
@@ -16,6 +19,7 @@ env:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     environment: production
 
     steps:
@@ -38,50 +42,35 @@ jobs:
           TF_VAR_exoscale_api_key: ${{ secrets.EXOSCALE_API_KEY }}
           TF_VAR_exoscale_api_secret: ${{ secrets.EXOSCALE_API_SECRET }}
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Build and push frontend Docker image
-        run: |
-          docker build ./frontend -t ghcr.io/${{ github.repository_owner }}/playpal-frontend:latest
-          docker push ghcr.io/${{ github.repository_owner }}/playpal-frontend:latest
-
-      - name: Build and push matching-service Docker image
-        run: |
-          docker build ./services/matching-service -t ghcr.io/${{ github.repository_owner }}/playpal-matching-service:latest
-          docker push ghcr.io/${{ github.repository_owner }}/playpal-matching-service:latest
-
-      - name: Build and push notification-service Docker image
-        run: |
-          docker build ./services/notification-service -t ghcr.io/${{ github.repository_owner }}/playpal-notification-service:latest
-          docker push ghcr.io/${{ github.repository_owner }}/playpal-notification-service:latest
-
       - name: Setup Kubeconfig
         run: |
           cat ${{ env.KUBECONFIG_PATH }} > $GITHUB_HOME/.kube/config
           chmod 600 $GITHUB_HOME/.kube/config
 
+      - name: Lowercase Repo Owner
+        id: lowercase_repo
+        run: |
+          echo "REPO_OWNER=${GITHUB_REPOSITORY_OWNER,,}" >> $GITHUB_ENV
+        shell: bash
+        working-directory: .
+
       - name: Deploy frontend to Kubernetes
         run: |
-          sed -i 's|YOUR_DOCKER_REGISTRY|ghcr.io/${{ github.repository_owner }}|g' infra/k8s/frontend-deployment.yaml
+          sed -i 's|YOUR_DOCKER_REGISTRY|ghcr.io/${{ env.REPO_OWNER }}|g' infra/k8s/frontend-deployment.yaml
+          sed -i 's|:latest|:${{ github.event.workflow_run.head_sha }}|g' infra/k8s/frontend-deployment.yaml
           kubectl apply -f infra/k8s/frontend-deployment.yaml
           kubectl apply -f infra/k8s/frontend-service.yaml
 
       - name: Deploy matching-service to Kubernetes
         run: |
-          sed -i 's|YOUR_DOCKER_REGISTRY|ghcr.io/${{ github.repository_owner }}|g' infra/k8s/matching-deployment.yaml
+          sed -i 's|YOUR_DOCKER_REGISTRY|ghcr.io/${{ env.REPO_OWNER }}|g' infra/k8s/matching-deployment.yaml
+          sed -i 's|:latest|:${{ github.event.workflow_run.head_sha }}|g' infra/k8s/matching-deployment.yaml
           kubectl apply -f infra/k8s/matching-deployment.yaml
           kubectl apply -f infra/k8s/matching-service.yaml
 
       - name: Deploy notification-service to Kubernetes
         run: |
-          sed -i 's|YOUR_DOCKER_REGISTRY|ghcr.io/${{ github.repository_owner }}|g' infra/k8s/notification-deployment.yaml
+          sed -i 's|YOUR_DOCKER_REGISTRY|ghcr.io/${{ env.REPO_OWNER }}|g' infra/k8s/notification-deployment.yaml
+          sed -i 's|:latest|:${{ github.event.workflow_run.head_sha }}|g' infra/k8s/notification-deployment.yaml
           kubectl apply -f infra/k8s/notification-deployment.yaml
           kubectl apply -f infra/k8s/notification-service.yaml
