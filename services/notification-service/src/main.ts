@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
+import { Partitioners } from 'kafkajs';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -21,6 +22,9 @@ async function bootstrap() {
               password: kafkaPassword || '',
             }
           : undefined,
+      },
+      producer: {
+        createPartitioner: Partitioners.LegacyPartitioner,
       },
       consumer: {
         groupId: 'notification-service-group',

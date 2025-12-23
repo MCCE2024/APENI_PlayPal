@@ -9,6 +9,7 @@ import {
 } from './schemas/matching-request.schema';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { Partitioners } from 'kafkajs';
 
 @Module({
   imports: [
@@ -39,6 +40,9 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
                       password: kafkaPassword || '',
                     }
                   : undefined,
+              },
+              producer: {
+                createPartitioner: Partitioners.LegacyPartitioner,
               },
               consumer: {
                 groupId: 'matching-service-consumer',
