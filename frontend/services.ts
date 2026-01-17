@@ -1,7 +1,7 @@
 
 import type { MatchRequest } from './types';
 
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL as string) || 'http://localhost:3005';
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL as string) || '/api';
 const API_URL = `${API_BASE_URL}/matching`;
 
 export const getMatchRequests = async (userEmail?: string): Promise<MatchRequest[]> => {
