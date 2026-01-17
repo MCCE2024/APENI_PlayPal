@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "mongodb.fullname" . }}-init-script
+  labels:
+    {{- include "mongodb.labels" . | nindent 4 }}
+data:
+  create-user.sh: |
+    #!/bin/bash
+    set -e
+
+    echo "Creating application user..."
+
+    mongosh admin --host localhost -u "$MONGO_INITDB_ROOT_USERNAME" -p "$MONGO_INITDB_ROOT_PASSWORD" <<EOF
+    use $APP_DB
+    db.createUser({
+      user: "$APP_USER",
+      pwd: "$APP_PASS",
+      roles: [{ role: "readWrite", db: "$APP_DB" }]
+    })
+    EOF
+
+    echo "Application user created."

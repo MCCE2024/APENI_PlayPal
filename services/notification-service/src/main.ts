@@ -8,13 +8,18 @@ async function bootstrap() {
 
   const kafkaUsername = process.env.KAFKA_USERNAME;
   const kafkaPassword = process.env.KAFKA_PASSWORD;
+  const kafkaSslCa = process.env.KAFKA_SSL_CA;
 
   app.connectMicroservice<MicroserviceOptions>({
     transport: Transport.KAFKA,
     options: {
       client: {
         brokers: (process.env.KAFKA_BROKERS || 'localhost:9092').split(','),
-        ssl: !!kafkaUsername,
+        ssl: kafkaSslCa
+          ? {
+              ca: [kafkaSslCa],
+            }
+          : !!kafkaUsername,
         sasl: kafkaUsername
           ? {
               mechanism: 'plain',

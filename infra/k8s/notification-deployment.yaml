@@ -38,6 +38,11 @@ spec:
                 secretKeyRef:
                   name: kafka-prod-credentials
                   key: KAFKA_SASL_PASSWORD
+            - name: KAFKA_SSL_CA
+              valueFrom:
+                secretKeyRef:
+                  name: kafka-prod-credentials
+                  key: KAFKA_CA_CERTIFICATE
             - name: NODE_ENV
               value: "production"
             # Add other environment variables as needed, e.g., for email service (Resend)

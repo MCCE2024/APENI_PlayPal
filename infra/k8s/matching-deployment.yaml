@@ -53,4 +53,9 @@ spec:
                 secretKeyRef:
                   name: kafka-prod-credentials
                   key: KAFKA_SASL_PASSWORD
+            - name: KAFKA_SSL_CA
+              valueFrom:
+                secretKeyRef:
+                  name: kafka-prod-credentials
+                  key: KAFKA_CA_CERTIFICATE
             # Add other environment variables as needed, potentially from a ConfigMap or Secret

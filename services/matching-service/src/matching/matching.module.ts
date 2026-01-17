@@ -24,6 +24,7 @@ import { Partitioners } from 'kafkajs';
         useFactory: (configService: ConfigService) => {
           const kafkaUsername = configService.get<string>('KAFKA_USERNAME');
           const kafkaPassword = configService.get<string>('KAFKA_PASSWORD');
+          const kafkaSslCa = configService.get<string>('KAFKA_SSL_CA');
           return {
             transport: Transport.KAFKA,
             options: {
@@ -32,7 +33,11 @@ import { Partitioners } from 'kafkajs';
                 brokers: (
                   configService.get<string>('KAFKA_BROKERS') || 'localhost:9092'
                 ).split(','),
-                ssl: !!kafkaUsername,
+                ssl: kafkaSslCa
+                  ? {
+                      ca: [kafkaSslCa],
+                    }
+                  : !!kafkaUsername,
                 sasl: kafkaUsername
                   ? {
                       mechanism: 'plain',
