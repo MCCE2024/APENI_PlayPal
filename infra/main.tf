@@ -380,7 +380,7 @@ resource "helm_release" "ingress_nginx" {
 
 resource "helm_release" "external_dns" {
   name       = "external-dns"
-  repository = "https://charts.bitnami.com/bitnami"
+  repository = "https://kubernetes-sigs.github.io/external-dns/"
   chart      = "external-dns"
   namespace  = "kube-system"
 
@@ -390,13 +390,18 @@ resource "helm_release" "external_dns" {
   }
 
   set {
-    name  = "cloudflare.apiToken"
+    name  = "env[0].name"
+    value = "CF_API_TOKEN"
+  }
+
+  set {
+    name  = "env[0].value"
     value = var.cloudflare_api_token
   }
 
   set {
-    name  = "cloudflare.proxied"
-    value = "true"
+    name  = "extraArgs[0]"
+    value = "--cloudflare-proxied"
   }
 
   set {
