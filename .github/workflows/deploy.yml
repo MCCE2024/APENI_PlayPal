@@ -61,6 +61,15 @@ jobs:
           fi
         shell: bash
 
+      - name: Create Image Pull Secret
+        run: |
+          kubectl create secret docker-registry ghcr-secret \
+            --docker-server=ghcr.io \
+            --docker-username=${{ github.actor }} \
+            --docker-password=${{ secrets.GITHUB_TOKEN }} \
+            -n playpal \
+            --dry-run=client -o yaml | kubectl apply -f -
+
       - name: Deploy frontend to Kubernetes
         run: |
           sed -i 's|YOUR_DOCKER_REGISTRY|ghcr.io/${{ env.REPO_OWNER }}|g' infra/k8s/frontend-deployment.yaml

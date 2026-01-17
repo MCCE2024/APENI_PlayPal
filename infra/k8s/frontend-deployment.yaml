@@ -15,6 +15,8 @@ spec:
       labels:
         app: frontend
     spec:
+      imagePullSecrets:
+        - name: ghcr-secret
       containers:
         - name: frontend
           image: YOUR_DOCKER_REGISTRY/playpal-frontend:latest # Placeholder for image, will be replaced by CI
