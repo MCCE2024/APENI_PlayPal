@@ -19,7 +19,7 @@ export class NotificationController {
   constructor(private readonly notificationService: NotificationService) {}
 
   @EventPattern(process.env.KAFKA_TOPIC || 'matches.matched')
-  async handleMatchFound(@Payload() message: any) {
+  async handleMatchFound(@Payload() message: MatchFoundPayload) {
     const { recipientEmail, opponent } = message;
     const subject = 'You have a new match on PlayPal!';
     const html = this.notificationService.generateMatchEmailHtml(opponent);
