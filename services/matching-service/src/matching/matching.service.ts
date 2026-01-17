@@ -163,8 +163,9 @@ export class MatchingService {
     this.logger.log(`Created match: ${req1.userEmail} vs ${req2.userEmail}`);
 
     // Emit events to Kafka with structured data
+    const kafkaTopic = this.configService.get<string>('KAFKA_TOPIC') || 'matches.matched';
     // Notify User 1
-    this.notificationClient.emit('matches.matched', {
+    this.notificationClient.emit(kafkaTopic, {
       recipientEmail: req1.userEmail,
       opponent: {
         email: req2.userEmail,
@@ -177,7 +178,7 @@ export class MatchingService {
     });
 
     // Notify User 2
-    this.notificationClient.emit('matches.matched', {
+    this.notificationClient.emit(kafkaTopic, {
       recipientEmail: req2.userEmail,
       opponent: {
         email: req1.userEmail,

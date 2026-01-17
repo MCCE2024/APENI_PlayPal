@@ -24,6 +24,26 @@ spec:
             - containerPort: 3000
           env:
             - name: KAFKA_BROKERS
-              value: "kafka:9092"
+              valueFrom:
+                secretKeyRef:
+                  name: kafka-dev-credentials
+                  key: KAFKA_BROKERS
+            - name: KAFKA_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: kafka-dev-credentials
+                  key: KAFKA_SASL_USERNAME
+            - name: KAFKA_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: kafka-dev-credentials
+                  key: KAFKA_SASL_PASSWORD
+            - name: KAFKA_SSL_CA
+              valueFrom:
+                secretKeyRef:
+                  name: kafka-dev-credentials
+                  key: KAFKA_CA_CERTIFICATE
+            - name: KAFKA_TOPIC
+              value: "matches.matched.dev"
             - name: NODE_ENV
               value: "development"

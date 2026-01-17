@@ -39,4 +39,24 @@ spec:
             - name: MONGODB_URI
               value: "mongodb://$(MONGODB_USER):$(MONGODB_PASSWORD)@$(MONGODB_HOST):$(MONGODB_PORT)/$(MONGODB_DATABASE)?authSource=$(MONGODB_DATABASE)"
             - name: KAFKA_BROKERS
-              value: "kafka:9092"
+              valueFrom:
+                secretKeyRef:
+                  name: kafka-dev-credentials
+                  key: KAFKA_BROKERS
+            - name: KAFKA_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: kafka-dev-credentials
+                  key: KAFKA_SASL_USERNAME
+            - name: KAFKA_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: kafka-dev-credentials
+                  key: KAFKA_SASL_PASSWORD
+            - name: KAFKA_SSL_CA
+              valueFrom:
+                secretKeyRef:
+                  name: kafka-dev-credentials
+                  key: KAFKA_CA_CERTIFICATE
+            - name: KAFKA_TOPIC
+              value: "matches.matched.dev"
