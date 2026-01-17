@@ -450,7 +450,7 @@ resource "helm_release" "kafka_dev" {
   name       = "kafka"
   repository = "oci://registry-1.docker.io/bitnami"
   chart      = "kafka"
-  version    = "26.0.0"
+  version    = "32.4.3"
   namespace  = kubernetes_namespace.playpal_dev_ns.metadata[0].name
 
   set {
