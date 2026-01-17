@@ -51,3 +51,5 @@ spec:
                 secretKeyRef:
                   name: notification-secrets
                   key: RESEND_API_KEY
+            - name: FROM_MAIL
+              value: "notifications@playpal.lzainzinger.com"

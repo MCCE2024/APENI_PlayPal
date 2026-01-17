@@ -76,6 +76,7 @@ jobs:
           sed -i 's|:latest|:${{ env.IMAGE_TAG }}|g' infra/k8s/frontend-deployment.yaml
           kubectl apply -f infra/k8s/frontend-deployment.yaml
           kubectl apply -f infra/k8s/frontend-service.yaml
+          kubectl apply -f infra/k8s/frontend-ingress.yaml
 
       - name: Deploy matching-service to Kubernetes
         run: |

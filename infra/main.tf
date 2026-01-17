@@ -355,3 +355,62 @@ resource "kubernetes_config_map" "loki_grafana_datasource" {
 
 }
     
+resource "kubernetes_namespace" "ingress_nginx" {
+  metadata {
+    name = "ingress-nginx"
+  }
+}
+
+resource "helm_release" "ingress_nginx" {
+  name       = "ingress-nginx"
+  repository = "https://kubernetes.github.io/ingress-nginx"
+  chart      = "ingress-nginx"
+  namespace  = kubernetes_namespace.ingress_nginx.metadata[0].name
+
+  set {
+    name  = "controller.service.externalTrafficPolicy"
+    value = "Local"
+  }
+
+  depends_on = [
+    local_sensitive_file.kubeconfig,
+    exoscale_sks_nodepool.prod_nodepool
+  ]
+}
+
+resource "helm_release" "external_dns" {
+  name       = "external-dns"
+  repository = "https://charts.bitnami.com/bitnami"
+  chart      = "external-dns"
+  namespace  = "kube-system"
+
+  set {
+    name  = "provider"
+    value = "cloudflare"
+  }
+
+  set {
+    name  = "cloudflare.apiToken"
+    value = var.cloudflare_api_token
+  }
+
+  set {
+    name  = "cloudflare.proxied"
+    value = "true"
+  }
+
+  set {
+    name  = "policy"
+    value = "sync"
+  }
+
+  set {
+    name  = "txtOwnerId"
+    value = "playpal-cluster"
+  }
+
+  depends_on = [
+    local_sensitive_file.kubeconfig,
+    exoscale_sks_nodepool.prod_nodepool
+  ]
+}

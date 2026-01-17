@@ -52,3 +52,10 @@ variable "resend_api_key" {
   sensitive   = true
   default     = "" # Optional, so it doesn't break if not provided immediately
 }
+
+variable "cloudflare_api_token" {
+  description = "API Token for Cloudflare (used by ExternalDNS)"
+  type        = string
+  sensitive   = true
+  default     = ""
+}
