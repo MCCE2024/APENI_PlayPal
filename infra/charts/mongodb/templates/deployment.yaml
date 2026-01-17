@@ -31,10 +31,22 @@ spec:
                 secretKeyRef:
                   name: {{ include "mongodb.fullname" . }}
                   key: mongo-root-password
+            - name: APP_USER
+              value: {{ .Values.auth.username }}
+            - name: APP_DB
+              value: {{ .Values.auth.database }}
+            - name: APP_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "mongodb.fullname" . }}
+                  key: mongo-password
             {{- end }}
           volumeMounts:
             - name: data
               mountPath: /data/db
+            - name: init-script
+              mountPath: /docker-entrypoint-initdb.d/create-user.sh
+              subPath: create-user.sh
       volumes:
         - name: data
           {{- if .Values.persistence.enabled }}
@@ -43,3 +55,7 @@ spec:
           {{- else }}
           emptyDir: {}
           {{- end }}
+        - name: init-script
+          configMap:
+            name: {{ include "mongodb.fullname" . }}-init-script
+            defaultMode: 0755

@@ -37,7 +37,7 @@ spec:
             - name: MONGODB_DATABASE
               value: "playpal" # As defined in mongodb Helm chart values.yaml
             - name: MONGODB_URI
-              value: "mongodb://$(MONGODB_USER):$(MONGODB_PASSWORD)@$(MONGODB_HOST):$(MONGODB_PORT)/$(MONGODB_DATABASE)?authSource=admin"
+              value: "mongodb://$(MONGODB_USER):$(MONGODB_PASSWORD)@$(MONGODB_HOST):$(MONGODB_PORT)/$(MONGODB_DATABASE)?authSource=$(MONGODB_DATABASE)"
             - name: KAFKA_BROKERS
               valueFrom:
                 secretKeyRef:
