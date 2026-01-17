@@ -13,7 +13,7 @@ async function bootstrap() {
 
   app.useGlobalPipes(new ValidationPipe());
 
-  await app.listen(3005);
+  await app.listen(process.env.PORT ?? 3000);
 }
 
 void bootstrap();
