@@ -32,7 +32,7 @@ async function bootstrap() {
         createPartitioner: Partitioners.LegacyPartitioner,
       },
       consumer: {
-        groupId: 'notification-service-group',
+        groupId: `notification-service-group-${process.env.NODE_ENV || 'dev'}`,
       },
     },
   });

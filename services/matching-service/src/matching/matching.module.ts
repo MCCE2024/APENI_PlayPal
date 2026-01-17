@@ -50,7 +50,7 @@ import { Partitioners } from 'kafkajs';
                 createPartitioner: Partitioners.LegacyPartitioner,
               },
               consumer: {
-                groupId: 'matching-service-consumer',
+                groupId: `matching-service-consumer-${configService.get<string>('NODE_ENV') || 'dev'}`,
               },
             },
           };
