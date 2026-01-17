@@ -419,3 +419,50 @@ resource "helm_release" "external_dns" {
     exoscale_sks_nodepool.prod_nodepool
   ]
 }
+
+# ==========================================
+# DEVELOPMENT ENVIRONMENT
+# ==========================================
+
+resource "kubernetes_namespace" "playpal_dev_ns" {
+  metadata {
+    name = "playpal-dev"
+  }
+}
+
+resource "helm_release" "mongodb_dev" {
+  name      = "mongodb"
+  chart     = "./charts/mongodb"
+  namespace = kubernetes_namespace.playpal_dev_ns.metadata[0].name
+
+  set {
+    name  = "auth.enabled"
+    value = "true"
+  }
+
+  depends_on = [
+    local_sensitive_file.kubeconfig,
+    exoscale_sks_nodepool.prod_nodepool
+  ]
+}
+
+resource "helm_release" "kafka_dev" {
+  name       = "kafka"
+  repository = "oci://registry-1.docker.io/bitnami"
+  chart      = "kafka"
+  version    = "26.0.0"
+  namespace  = kubernetes_namespace.playpal_dev_ns.metadata[0].name
+
+  set {
+    name  = "listeners.client.protocol"
+    value = "PLAINTEXT"
+  }
+
+  # Allow auto-creation of topics if needed, or create via K8s Job?
+  # Bitnami kafka defaults usually allow auto-create topics.
+
+  depends_on = [
+    local_sensitive_file.kubeconfig,
+    exoscale_sks_nodepool.prod_nodepool
+  ]
+}
