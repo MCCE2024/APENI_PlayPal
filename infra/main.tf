@@ -369,7 +369,7 @@ resource "helm_release" "ingress_nginx" {
 
   set {
     name  = "controller.service.externalTrafficPolicy"
-    value = "Local"
+    value = "Cluster"
   }
 
   depends_on = [
