@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notification-deployment
+  namespace: playpal-dev
+  labels:
+    app: notification-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: notification-service
+  template:
+    metadata:
+      labels:
+        app: notification-service
+    spec:
+      imagePullSecrets:
+        - name: ghcr-secret
+      containers:
+        - name: notification-service
+          image: YOUR_DOCKER_REGISTRY/playpal-notification-service:latest
+          ports:
+            - containerPort: 3000
+          env:
+            - name: KAFKA_BROKERS
+              value: "kafka:9092"
+            - name: NODE_ENV
+              value: "development"
