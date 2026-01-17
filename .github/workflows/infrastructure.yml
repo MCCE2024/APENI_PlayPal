@@ -1,0 +1,40 @@
+name: Infrastructure Build
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'infra/**'
+  workflow_dispatch:
+
+env:
+  EXOSCALE_API_KEY: ${{ secrets.EXOSCALE_API_KEY }}
+  EXOSCALE_API_SECRET: ${{ secrets.EXOSCALE_API_SECRET }}
+  AWS_ACCESS_KEY_ID: ${{ secrets.EXOSCALE_API_KEY }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.EXOSCALE_API_SECRET }}
+
+jobs:
+  terraform:
+    name: Terraform Apply
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.x
+
+      - name: Terraform Init
+        working-directory: ./infra
+        run: terraform init
+
+      - name: Terraform Apply
+        working-directory: ./infra
+        run: terraform apply -auto-approve
+        env:
+          TF_VAR_exoscale_api_key: ${{ secrets.EXOSCALE_API_KEY }}
+          TF_VAR_exoscale_api_secret: ${{ secrets.EXOSCALE_API_SECRET }}
