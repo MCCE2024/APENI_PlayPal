@@ -446,23 +446,41 @@ resource "helm_release" "mongodb_dev" {
   ]
 }
 
-resource "helm_release" "kafka_dev" {
-  name       = "kafka"
-  repository = "oci://registry-1.docker.io/bitnami"
-  chart      = "kafka"
-  version    = "32.4.3"
-  namespace  = kubernetes_namespace.playpal_dev_ns.metadata[0].name
-
-  set {
-    name  = "listeners.client.protocol"
-    value = "PLAINTEXT"
-  }
-
-  # Allow auto-creation of topics if needed, or create via K8s Job?
-  # Bitnami kafka defaults usually allow auto-create topics.
+# Create Dev Topic in the SAME Kafka Cluster (Exoscale DBaaS)
+resource "kafka_topic" "playpal_dev_topic" {
+  name               = "matches.matched.dev"
+  partitions         = 3
+  replication_factor = 2
 
   depends_on = [
-    local_sensitive_file.kubeconfig,
-    exoscale_sks_nodepool.prod_nodepool
+    exoscale_dbaas.prod_kafka
+  ]
+}
+
+# Create Credentials Secret in Dev Namespace
+resource "kubernetes_secret" "kafka_dev_credentials" {
+  metadata {
+    name      = "kafka-dev-credentials"
+    namespace = kubernetes_namespace.playpal_dev_ns.metadata[0].name
+  }
+
+  type = "Opaque"
+
+  data = {
+    # Bootstrap URI (Same as Prod)
+    "KAFKA_BROKERS" = "${data.exoscale_database_uri.prod_kafka.host}:21712"
+
+    # SASL Username and Password (Same as Prod User)
+    "KAFKA_SASL_USERNAME" = exoscale_dbaas_kafka_user.prod_kafka_user.username
+    "KAFKA_SASL_PASSWORD" = exoscale_dbaas_kafka_user.prod_kafka_user.password
+
+    # CA Certificate
+    "KAFKA_CA_CERTIFICATE" = exoscale_dbaas.prod_kafka.ca_certificate
+  }
+
+  depends_on = [
+    exoscale_dbaas.prod_kafka,
+    data.exoscale_database_uri.prod_kafka,
+    kubernetes_namespace.playpal_dev_ns
   ]
 }
