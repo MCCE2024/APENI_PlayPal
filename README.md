@@ -1,16 +1,18 @@
 ## PlayPal
-This repository contains the source code for a PlayPal - a progressive web application (PWA) built with a microservice architecture. The goal is to create a scalable and maintainable application by separating concerns into independent services.
+This repository contains the source code for PlayPal - a progressive web application (PWA) built with a microservice architecture. The goal is to create a scalable and maintainable application by separating concerns into independent services.
 
-This README serves as a guide for setting up the project, running the services, and effectively using the Gemini code assistant to accelerate development.
+This README serves as a guide for setting up the project, running the services, and understanding the infrastructure.
 
 ### 🚀 Tech Stack
 - **Frontend:** React (Vite)
 - **Backend Microservices:** NestJS (Node.js)
-- **Database:** MongoDB
-- **Communication:** HTTP (REST), Kafka (Planned)
-- **Containerization:** Docker
+- **Database:** MongoDB (Helm on K8s)
+- **Message Broker:** Kafka (Exoscale DBaaS)
+- **Infrastructure:** Terraform, Kubernetes (Exoscale SKS), Helm
+- **Observability:** Prometheus, Grafana, Loki, Promtail
+- **CI/CD:** GitHub Actions
 
-### Architecture
+### 🏗 Architecture
 The application follows a microservice architecture, where each service is responsible for a specific domain or functionality.
 
 ![Architecture Diagram](./docs/img/playpal_poc_architecture.png)
@@ -26,9 +28,48 @@ The project is organized into a monorepo structure:
 │   ├── user-service/     # (Planned) User profile management
 │   └── ...
 ├── infra/                # Terraform & Helm charts for Exoscale
+│   ├── charts/           # Local Helm charts (e.g. MongoDB)
+│   ├── k8s/              # Kubernetes Manifests per env
+│   └── main.tf           # Terraform Infrastructure definition
+├── tests/                # Integration & Load tests (k6)
 ├── .github/workflows/    # CI/CD Pipelines
 └── README.md
 ```
+
+---
+
+### ☁️ Infrastructure & Cloud
+The production and staging environments are hosted on **Exoscale** using SKS (Scalable Kubernetes Service), fully managed via **Terraform**.
+
+#### Environments
+- **Production (`playpal`)**: The stable live environment.
+  - URL: `https://playpal.lzainzinger.com`
+- **Development (`playpal-dev`)**: The integration environment for testing new features.
+  - URL: `https://dev-playpal.lzainzinger.com`
+
+#### Central Services
+The cluster runs several shared platform services:
+- **Ingress NGINX**: Central entry point for all HTTP traffic.
+- **ExternalDNS**: Automatically syncs Kubernetes Ingress rules to **Cloudflare** DNS records.
+- **Cert-Manager**: (Planned) Automated TLS certificate management.
+
+#### 🔭 Observability
+A comprehensive monitoring stack is deployed in the `monitoring` namespace:
+- **Prometheus**: Collects metrics from services and infrastructure.
+- **Loki**: Aggregates logs from all pods via Promtail sidecars.
+- **Grafana**: Visualizes metrics and logs.
+  - URL: `https://grafana-playpal.lzainzinger.com`
+
+---
+
+### 🔄 CI/CD Pipeline
+Deployment is automated via GitHub Actions (`pipeline.yml`).
+
+1. **Build & Unit Test**: Code is built, linted, and unit-tested. Docker images are pushed to GHCR.
+2. **Deploy to Dev**: The new images are deployed to the `playpal-dev` namespace using Helm.
+3. **Integration Test**: A **k6** load/integration test suite runs against the Dev environment to verify stability.
+4. **Manual Approval**: The pipeline pauses and requests manual approval from maintainers.
+5. **Deploy to Prod**: Upon approval, the artifacts are promoted to the `playpal` production namespace.
 
 ---
 
@@ -84,7 +125,7 @@ brew services start mongodb-community
 ```
 
 **Kafka (Optional)**
-While the infrastructure supports Kafka, the current services communicate primarily via HTTP. To run Kafka locally (e.g., for future development), utilizing Docker is highly recommended over a local installation due to complexity.
+While the infrastructure supports Kafka, local development often mocks this or uses a local container.
 ```bash
 # Run Redpanda (Kafka compatible, lighter for dev)
 docker run -d --name redpanda -p 9092:9092 -p 9644:9644 redpandadata/redpanda:latest redpanda start --mode dev-container
