@@ -139,10 +139,65 @@ jobs:
           sed -i "s|:latest|:${{ env.IMAGE_TAG }}|g" infra/k8s/dev/*.yaml
           kubectl apply -f infra/k8s/dev/
 
-  # 3. Deploy to Production (Manual Approval required via Environment Settings)
+  # 3. Integration Tests (k6 on K8s)
+  integration-test:
+    name: Integration Tests
+    needs: deploy-dev
+    runs-on: ubuntu-latest
+    environment: development
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.x
+
+      - name: Terraform Init
+        working-directory: ./infra
+        run: terraform init
+
+      - name: Fetch Kubeconfig
+        working-directory: ./infra
+        run: |
+          mkdir -p $HOME/.kube
+          terraform output -raw kubeconfig > $HOME/.kube/config
+          chmod 600 $HOME/.kube/config
+
+      - name: Cleanup previous run
+        run: |
+          kubectl delete job k6-integration-test -n playpal-dev --ignore-not-found
+          kubectl delete configmap k6-test-script -n playpal-dev --ignore-not-found
+
+      - name: Create Test Script ConfigMap
+        run: |
+          kubectl create configmap k6-test-script --from-file=tests/k6/integration-test.js -n playpal-dev
+
+      - name: Run k6 Integration Test Job
+        run: |
+          kubectl apply -f infra/k8s/dev/k6-job.yaml
+
+      - name: Wait for Test Completion
+        run: |
+          kubectl wait --for=condition=complete --timeout=300s job/k6-integration-test -n playpal-dev || (kubectl logs job/k6-integration-test -n playpal-dev && exit 1)
+
+      - name: Check Logs
+        if: success()
+        run: |
+          kubectl logs job/k6-integration-test -n playpal-dev
+
+      - name: Cleanup on Success
+        if: success()
+        run: |
+          kubectl delete job k6-integration-test -n playpal-dev
+          kubectl delete configmap k6-test-script -n playpal-dev
+
+  # 4. Deploy to Production (Manual Approval required via Environment Settings)
   deploy-prod:
     name: Deploy to Prod
-    needs: deploy-dev
+    needs: integration-test
     runs-on: ubuntu-latest
     environment: production
 

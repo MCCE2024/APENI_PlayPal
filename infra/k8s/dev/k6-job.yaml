@@ -1,0 +1,21 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: k6-integration-test
+  namespace: playpal-dev
+spec:
+  template:
+    spec:
+      containers:
+        - name: k6
+          image: grafana/k6:latest
+          command: ["k6", "run", "/scripts/integration-test.js"]
+          volumeMounts:
+            - name: test-script-volume
+              mountPath: /scripts
+      restartPolicy: Never
+      volumes:
+        - name: test-script-volume
+          configMap:
+            name: k6-test-script
+  backoffLimit: 1
