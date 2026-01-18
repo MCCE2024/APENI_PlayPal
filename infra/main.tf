@@ -303,7 +303,7 @@ resource "helm_release" "kube_prometheus_stack" {
 
   set {
     name  = "grafana.ingress.hosts[0]"
-    value = "grafana.playpal.lzainzinger.com"
+    value = "grafana-playpal.lzainzinger.com"
   }
 
   depends_on = [
