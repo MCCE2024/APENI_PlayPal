@@ -177,6 +177,10 @@ jobs:
 
       - name: Run k6 Integration Test Job
         run: |
+          # Wait a bit for pods to be ready
+          kubectl rollout status deployment/frontend-deployment-dev -n playpal-dev
+          kubectl rollout status deployment/matching-deployment-dev -n playpal-dev
+          kubectl rollout status deployment/notification-deployment-dev -n playpal-dev
           kubectl apply -f infra/k8s/dev/k6-job.yaml
 
       - name: Wait for Test Completion
