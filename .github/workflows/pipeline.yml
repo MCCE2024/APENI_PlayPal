@@ -168,7 +168,7 @@ jobs:
 
       - name: Cleanup previous run
         run: |
-          kubectl delete job k6-integration-test -n playpal-dev --ignore-not-found
+          kubectl delete job k6-integration-test -n playpal-dev --ignore-not-found --wait
           kubectl delete configmap k6-test-script -n playpal-dev --ignore-not-found
 
       - name: Create Test Script ConfigMap
@@ -181,7 +181,7 @@ jobs:
           kubectl rollout status deployment/frontend-deployment-dev -n playpal-dev
           kubectl rollout status deployment/matching-deployment-dev -n playpal-dev
           kubectl rollout status deployment/notification-deployment-dev -n playpal-dev
-          kubectl apply -f infra/k8s/dev/k6-job.yaml
+          kubectl apply -f tests/k6/k8s/k6-job.yaml
 
       - name: Wait for Test Completion
         run: |
