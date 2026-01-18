@@ -291,6 +291,21 @@ resource "helm_release" "kube_prometheus_stack" {
   chart      = "kube-prometheus-stack"
   namespace  = kubernetes_namespace.monitoring_ns.metadata[0].name
 
+  set {
+    name  = "grafana.ingress.enabled"
+    value = "true"
+  }
+
+  set {
+    name  = "grafana.ingress.ingressClassName"
+    value = "nginx"
+  }
+
+  set {
+    name  = "grafana.ingress.hosts[0]"
+    value = "grafana.playpal.lzainzinger.com"
+  }
+
   depends_on = [
     local_sensitive_file.kubeconfig,
     exoscale_sks_nodepool.prod_nodepool
