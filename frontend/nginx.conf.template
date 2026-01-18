@@ -1,0 +1,24 @@
+server {
+    listen 80;
+    server_name localhost;
+    root /usr/share/nginx/html;
+    index index.html;
+
+    # Gzip compression
+    gzip on;
+    gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
+
+    # Proxy API requests to Matching Service
+    location /api/matching/ {
+        proxy_pass ${MATCHING_SERVICE_URL}/matching/;
+    }
+
+    location /api/notification/ {
+        proxy_pass ${NOTIFICATION_SERVICE_URL}/notification/;
+    }
+
+    # SPA Fallback
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+}

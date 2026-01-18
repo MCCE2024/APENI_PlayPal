@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: notification-service
+  name: notification-service-dev
   namespace: playpal-dev
   labels:
     app: notification-service

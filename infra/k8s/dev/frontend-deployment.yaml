@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: frontend-deployment
+  name: frontend-deployment-dev
   namespace: playpal-dev
   labels:
     app: frontend
@@ -25,3 +25,7 @@ spec:
           env:
             - name: API_BASE_URL
               value: "/api" # Assuming API Gateway or Ingress will handle routing
+            - name: MATCHING_SERVICE_URL
+              value: "http://matching-service-dev:3000"
+            - name: NOTIFICATION_SERVICE_URL
+              value: "http://notification-service-dev:3000"
