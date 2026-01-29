@@ -32,12 +32,34 @@ export class NotificationService {
     dateTimeStart: string;
     dateTimeEnd: string;
   }): string {
+    const start = new Date(opponent.dateTimeStart);
+    const end = new Date(opponent.dateTimeEnd);
+
+    // Explicitly use CET (Europe/Berlin) and show the timezone to avoid confusion
+    const dateOptions: Intl.DateTimeFormatOptions = {
+      weekday: 'short',
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      timeZone: 'Europe/Berlin',
+      timeZoneName: 'short',
+    };
+
+    const timeOptions: Intl.DateTimeFormatOptions = {
+      hour: '2-digit',
+      minute: '2-digit',
+      timeZone: 'Europe/Berlin',
+      timeZoneName: 'short',
+    };
+
     return `
       <h1>Match Found!</h1>
       <p>You have been matched for a game of <strong>${opponent.sport}</strong>.</p>
       <p><strong>Opponent:</strong> ${opponent.email} (Level: ${opponent.level})</p>
       <p><strong>Location:</strong> ${opponent.location}</p>
-      <p><strong>Time:</strong> ${new Date(opponent.dateTimeStart).toLocaleString()} - ${new Date(opponent.dateTimeEnd).toLocaleTimeString()}</p>
+      <p><strong>Time:</strong> ${start.toLocaleString('en-GB', dateOptions)} - ${end.toLocaleTimeString('en-GB', timeOptions)}</p>
     `;
   }
 

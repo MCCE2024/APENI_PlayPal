@@ -162,8 +162,17 @@ export class MatchingService {
 
     this.logger.log(`Created match: ${req1.userEmail} vs ${req2.userEmail}`);
 
+    // Calculate overlapping time window
+    const matchStart = new Date(
+      Math.max(req1.dateTimeStart.getTime(), req2.dateTimeStart.getTime()),
+    );
+    const matchEnd = new Date(
+      Math.min(req1.dateTimeEnd.getTime(), req2.dateTimeEnd.getTime()),
+    );
+
     // Emit events to Kafka with structured data
-    const kafkaTopic = this.configService.get<string>('KAFKA_TOPIC') || 'matches.matched';
+    const kafkaTopic =
+      this.configService.get<string>('KAFKA_TOPIC') || 'matches.matched';
     // Notify User 1
     this.notificationClient.emit(kafkaTopic, {
       recipientEmail: req1.userEmail,
@@ -172,8 +181,8 @@ export class MatchingService {
         level: req2.level,
         sport: req2.sport,
         location: req2.location,
-        dateTimeStart: req2.dateTimeStart.toISOString(),
-        dateTimeEnd: req2.dateTimeEnd.toISOString(),
+        dateTimeStart: matchStart.toISOString(),
+        dateTimeEnd: matchEnd.toISOString(),
       },
     });
 
@@ -185,8 +194,8 @@ export class MatchingService {
         level: req1.level,
         sport: req1.sport,
         location: req1.location,
-        dateTimeStart: req1.dateTimeStart.toISOString(),
-        dateTimeEnd: req1.dateTimeEnd.toISOString(),
+        dateTimeStart: matchStart.toISOString(),
+        dateTimeEnd: matchEnd.toISOString(),
       },
     });
 
